@@ -1,0 +1,21 @@
+{
+  "name": "mqtt-houm-gw",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@chacal/js-utils": "^1.5.0",
+    "@types/baconjs": "^0.7.33",
+    "@types/node": "^8.10.22",
+    "@types/node-fetch": "^2.1.2",
+    "baconjs": "^2.0.7",
+    "mqtt": "^2.18.3",
+    "node-fetch": "^2.2.0",
+    "typescript": "^2.9.2"
+  }
+}
