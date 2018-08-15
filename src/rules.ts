@@ -9,7 +9,7 @@ import {Lights} from "./Lights"
 type SensorEventStream = Bacon.EventStream<any, ISensorEvent>
 
 const PIR_TURN_ON_DEBOUNCE_MS = 15000
-const PIR_TURN_OFF_DELAY_MS = 30000
+const PIR_TURN_OFF_DELAY_MS = 60000
 
 
 export function setupUpstairsToilet(sensorEvents: SensorEventStream) {
