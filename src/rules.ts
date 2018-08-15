@@ -13,10 +13,13 @@ const PIR_TURN_OFF_DELAY_MS = 30000
 
 
 export function setupUpstairsToilet(sensorEvents: SensorEventStream) {
-  const INSTANCE = 'P300'
+  const INSTANCE1 = 'P300'
+  const INSTANCE2 = 'P301'
   const TAG = 'k'
 
-  const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE, TAG) as Bacon.EventStream<any, IPirEvent>
+  const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
+    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE2, TAG)) as Bacon.EventStream<any, IPirEvent>
+
   pirEvents
     .filter(e => e.motionDetected)
     .debounceImmediate(PIR_TURN_ON_DEBOUNCE_MS)
