@@ -7,6 +7,7 @@ import {Lights} from "./Lights"
 
 
 type SensorEventStream = Bacon.EventStream<any, ISensorEvent>
+type PirEventStream = Bacon.EventStream<any, IPirEvent>
 
 const PIR_TURN_ON_DEBOUNCE_MS = 15000
 const PIR_TURN_OFF_DELAY_MS = 60000
@@ -18,20 +19,26 @@ export function setupUpstairsToilet(sensorEvents: SensorEventStream) {
   const TAG = 'k'
 
   const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
-    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE2, TAG)) as Bacon.EventStream<any, IPirEvent>
+    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE2, TAG)) as PirEventStream
 
+  setupPirLights(pirEvents,
+    () => turnOn(Lights.Upstairs.Toilet.LEDStrip, 255),
+    () => turnOff(Lights.Upstairs.Toilet.LEDStrip)
+  )
+}
+
+function setupPirLights(pirEvents: PirEventStream, onHandler: () => void, offHandler: () => void) {
   pirEvents
     .filter(e => e.motionDetected)
     .debounceImmediate(PIR_TURN_ON_DEBOUNCE_MS)
     .doAction(e => console.log(`ON: ${JSON.stringify(e)}`))
-    .onValue(() => turnOn(Lights.Upstairs.Toilet.LEDStrip, 255))
-
+    .onValue(onHandler)
 
   pirEvents
     .filter(e => e.motionDetected)
     .flatMapLatest(e => Bacon.later(PIR_TURN_OFF_DELAY_MS, e))
     .doAction(e => console.log(`OFF: ${JSON.stringify(e)}`))
-    .onValue(() => turnOff(Lights.Upstairs.Toilet.LEDStrip))
+    .onValue(offHandler)
 }
 
 
