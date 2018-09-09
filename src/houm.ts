@@ -3,6 +3,7 @@ import fetch from 'node-fetch'
 const HOUM_SITE_KEY = process.env.HOUM_SITE_KEY
 const HOUM_BASE_URL = `https://houmkolmonen.herokuapp.com/api/site/${HOUM_SITE_KEY}`
 const HOUM_APPLY_DEVICE_URL = HOUM_BASE_URL + '/applyDevice'
+const HOUM_APPLY_SCENE_URL = HOUM_BASE_URL + '/applyScene'
 
 if(!HOUM_SITE_KEY) {
   console.error('HOUM site key missing! Set HOUM_SITE_KEY environment variable. Exiting..')
@@ -27,6 +28,10 @@ export function turnOff(deviceId: string) {
       on: false,
     }
   })
+}
+
+export function applyScene(sceneId: string) {
+  postJson(HOUM_APPLY_SCENE_URL, {id: sceneId})
 }
 
 function postJson(url: string, json: {}) {
