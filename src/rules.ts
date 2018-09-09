@@ -1,9 +1,11 @@
 import Bacon = require('baconjs')
 import {SensorEvents} from "@chacal/js-utils"
+import {LocalTime} from 'js-joda'
 import ISensorEvent = SensorEvents.ISensorEvent
 import IPirEvent = SensorEvents.IPirEvent
-import {turnOn, turnOff} from "./houm"
+import {turnOn, turnOff, applyScene} from "./houm"
 import {Lights} from "./Lights"
+import {Scenes} from "./Scenes"
 
 
 type SensorEventStream = Bacon.EventStream<any, ISensorEvent>
@@ -24,6 +26,31 @@ export function setupUpstairsToilet(sensorEvents: SensorEventStream) {
   setupPirLights(pirEvents,
     () => turnOn(Lights.Upstairs.Toilet.LEDStrip, 255),
     () => turnOff(Lights.Upstairs.Toilet.LEDStrip)
+  )
+}
+
+export function setupDownstairsToilet(sensorEvents: SensorEventStream) {
+  const INSTANCE1 = 'P302'
+  const INSTANCE2 = 'P303'
+  const TAG = 'k'
+
+  const dayModeStart = () => LocalTime.of(7, 0)
+  const dayModeEnd = () => LocalTime.of(22, 30)
+  const isDayTime = () => LocalTime.now().isAfter(dayModeStart()) && LocalTime.now().isBefore(dayModeEnd())
+
+  const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
+    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE2, TAG)) as PirEventStream
+  const dayPirEvents = pirEvents.filter(isDayTime)
+  const nightPirEvents = pirEvents.filter(() => !isDayTime())
+
+  setupPirLights(dayPirEvents,
+    () => applyScene(Scenes.Downstairs.Toilet.Bright),
+    () => applyScene(Scenes.Downstairs.Toilet.Off)
+  )
+
+  setupPirLights(nightPirEvents,
+    () => applyScene(Scenes.Downstairs.Toilet.Dim),
+    () => applyScene(Scenes.Downstairs.Toilet.Off)
   )
 }
 

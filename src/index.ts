@@ -1,5 +1,5 @@
 import {Mqtt, SensorEvents} from '@chacal/js-utils'
-import {setupUpstairsToilet} from "./rules"
+import {setupUpstairsToilet, setupDownstairsToilet} from "./rules"
 import ISensorEvent = SensorEvents.ISensorEvent
 
 const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtt://mqtt-home.chacal.fi'
@@ -13,3 +13,4 @@ const sensorEvents = Mqtt.messageStreamFrom(mqttClient)
   .map(msg => JSON.parse(msg.toString()) as ISensorEvent)
 
 setupUpstairsToilet(sensorEvents)
+setupDownstairsToilet(sensorEvents)
