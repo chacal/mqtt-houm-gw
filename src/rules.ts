@@ -12,7 +12,7 @@ type SensorEventStream = Bacon.EventStream<any, ISensorEvent>
 type PirEventStream = Bacon.EventStream<any, IPirEvent>
 
 const PIR_TURN_ON_DEBOUNCE_MS = 15000
-const PIR_TURN_OFF_DELAY_MS = 60000
+const PIR_TURN_OFF_DELAY_MS = 120000
 
 
 export function setupUpstairsToilet(sensorEvents: SensorEventStream) {
