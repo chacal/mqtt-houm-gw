@@ -16,8 +16,8 @@ const PIR_TURN_OFF_DELAY_MS = 120000
 
 
 export function setupUpstairsToilet(sensorEvents: SensorEventStream) {
-  const INSTANCE1 = 'P300'
-  const INSTANCE2 = 'P301'
+  const INSTANCE1 = 'P304'
+  const INSTANCE2 = 'P305'
   const TAG = 'k'
 
   const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
@@ -32,6 +32,8 @@ export function setupUpstairsToilet(sensorEvents: SensorEventStream) {
 export function setupDownstairsToilet(sensorEvents: SensorEventStream) {
   const INSTANCE1 = 'P302'
   const INSTANCE2 = 'P303'
+  const INSTANCE3 = 'P306'
+  const INSTANCE4 = 'P307'
   const TAG = 'k'
 
   const dayModeStart = () => LocalTime.of(7, 0)
@@ -39,7 +41,9 @@ export function setupDownstairsToilet(sensorEvents: SensorEventStream) {
   const isDayTime = () => LocalTime.now().isAfter(dayModeStart()) && LocalTime.now().isBefore(dayModeEnd())
 
   const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
-    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE2, TAG)) as PirEventStream
+    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE2, TAG))
+    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE3, TAG))
+    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE4, TAG)) as PirEventStream
   const dayPirEvents = pirEvents.filter(isDayTime)
   const nightPirEvents = pirEvents.filter(() => !isDayTime())
 
