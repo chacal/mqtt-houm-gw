@@ -17,7 +17,7 @@ const PIR_TURN_OFF_DELAY_MS = 120000
 
 export function setupUpstairsToilet(sensorEvents: SensorEventStream) {
   const INSTANCE1 = 'P304'
-  const INSTANCE2 = 'P305'
+  const INSTANCE2 = 'P308'
   const TAG = 'k'
 
   const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
