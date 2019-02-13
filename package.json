@@ -9,12 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@chacal/js-utils": "^1.5.0",
+    "@chacal/js-utils": "^1.8.0",
     "@types/baconjs": "^0.7.33",
     "@types/node": "^8.10.22",
     "@types/node-fetch": "^2.1.2",
     "baconjs": "^2.0.7",
+    "coap": "^0.22.0",
     "js-joda": "^1.9.1",
+    "js-joda-timezone": "^2.0.1",
     "mqtt": "^2.18.3",
     "node-fetch": "^2.2.0",
     "typescript": "^2.9.2"
