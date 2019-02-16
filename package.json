@@ -19,6 +19,6 @@
     "js-joda-timezone": "^2.0.1",
     "mqtt": "^2.18.3",
     "node-fetch": "^2.2.0",
-    "typescript": "^2.9.2"
+    "typescript": "^3.3.3"
   }
 }
