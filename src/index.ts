@@ -3,6 +3,7 @@ import {setupUpstairsToilet, setupDownstairsToilet} from './rules'
 import {setupNetworkDisplay} from './network-display'
 import ISensorEvent = SensorEvents.ISensorEvent
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
+import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
 export type TempEventStream = Bacon.EventStream<any, ITemperatureEvent>
 
@@ -24,4 +25,9 @@ const outsideTempEvents = sensorEvents.filter(e => SensorEvents.isTemperature(e)
 
 setupUpstairsToilet(sensorEvents)
 setupDownstairsToilet(sensorEvents)
-setupNetworkDisplay(outsideTempEvents)
+setupNetworkDisplay(outsideTempEvents, publishThreadDisplayStatus)
+
+
+function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
+  mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
+}
