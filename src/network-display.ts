@@ -34,13 +34,13 @@ export function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb
 }
 
 function renderOutsideTemp(temperature: number, vcc: number, instance: string, timestamp: LocalTime) {
-  const tempStr = (temperature > 0 ? '+' : '') + temperature
+  const tempStr = (temperature > 0 ? '+' : '') + temperature.toPrecision(3)
   const displayData = [
     {c: 's', i: 0, x: 0, y: 8, font: 8, msg: `Outside`},
-    {c: 's', i: 1, x: 0, y: 40, font: 24, msg: `${tempStr}C`},
-    {c: 's', i: 2, x: 94, y: 64, font: 8, msg: `${(vcc / 1000).toPrecision(4)}V`},
-    {c: 's', i: 3, x: 0, y: 64, font: 8, msg: timestamp.truncatedTo(ChronoUnit.MINUTES)},
-    {c: 's', i: 4, x: 104, y: 8, font: 8, msg: instance}
+    {c: 's', i: 1, x: 0, y: 33, font: 18, msg: `${tempStr}C`},
+    {c: 's', i: 2, x: 50, y: 48, font: 8, msg: `${(vcc / 1000).toFixed(3)}V`},
+    {c: 's', i: 3, x: 0, y: 48, font: 8, msg: timestamp.truncatedTo(ChronoUnit.MINUTES)},
+    {c: 's', i: 4, x: 60, y: 8, font: 8, msg: instance}
   ]
   console.log(`Sending temperature: ${tempStr}C`)
   postJson(parse(`coap://[${DISPLAY_ADDRESS}]/api/display`), displayData, false)
