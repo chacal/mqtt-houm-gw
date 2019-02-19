@@ -34,7 +34,7 @@ export function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb
 }
 
 function renderOutsideTemp(temperature: number, vcc: number, instance: string, timestamp: LocalTime) {
-  const tempStr = (temperature > 0 ? '+' : '-') + temperature
+  const tempStr = (temperature > 0 ? '+' : '') + temperature
   const displayData = [
     {c: 's', i: 0, x: 0, y: 8, font: 8, msg: `Outside`},
     {c: 's', i: 1, x: 0, y: 40, font: 24, msg: `${tempStr}C`},
