@@ -6,10 +6,11 @@ import {SensorEvents} from '@chacal/js-utils'
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import {TempEventStream} from './index'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
+import IThreadParentInfo = SensorEvents.IThreadParentInfo
 
 require('js-joda-timezone')
 
-type DisplayStatus = { instance: string, vcc: number }
+type DisplayStatus = { instance: string, vcc: number, parent: IThreadParentInfo }
 type StatusStream = Bacon.EventStream<any, DisplayStatus>
 type CombinedStream = Bacon.EventStream<any, { tempEvent: ITemperatureEvent, status: DisplayStatus }>
 
@@ -27,7 +28,7 @@ export function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb
   }) as any as CombinedStream
 
   statuses.onValue(ds => {
-    const status = {instance: ds.instance, tag: 'd', vcc: ds.vcc, ts: new Date().toISOString()}
+    const status = {instance: ds.instance, tag: 'd', vcc: ds.vcc, ts: new Date().toISOString(), parent: ds.parent}
     displayStatusCb(status)
   })
   combined.onValue(v => renderOutsideTemp(v.tempEvent.temperature, v.status.vcc, v.status.instance, localTimeFor(v.tempEvent.ts)))
