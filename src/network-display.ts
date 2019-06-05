@@ -1,68 +1,40 @@
-import {getJson, postJson} from './coap'
+import {getJson} from './coap'
 import {parse} from 'url'
-import {ZonedDateTime, LocalTime, ZoneId, ChronoUnit} from 'js-joda'
+import {ZonedDateTime, LocalTime, ZoneId, ChronoUnit, Duration} from 'js-joda'
 import Bacon = require('baconjs')
 import {SensorEvents} from '@chacal/js-utils'
-import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import {TempEventStream} from './index'
-import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import IThreadParentInfo = SensorEvents.IThreadParentInfo
 
 require('js-joda-timezone')
 
-type DisplayStatus = { instance: string, vcc: number, parent: IThreadParentInfo }
-type StatusStream = Bacon.EventStream<any, DisplayStatus>
-type CombinedStream = Bacon.EventStream<any, { tempEvent: ITemperatureEvent, status: DisplayStatus }>
+type DisplayTag = 'd'
+export type DisplayStatus = { instance: string, tag: DisplayTag, vcc: number, ts: string, parent: IThreadParentInfo }
+export type StatusStream = Bacon.EventStream<any, DisplayStatus>
 
-const DISPLAY_ADDRESS = '2001:2003:f0a2:9c9b:e3d2:e57d:c507:d253'
-const TEMP_RENDERING_INTERVAL_MS = 2 * 60000
-const VCC_POLLING_INTERVAL_MS = 10 * 60000
-
-
-export function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
-  const statuses = statusesWithInterval()
-  const temperatures = temperaturesWithInterval(tempEvents)
-  const combined = Bacon.combineTemplate({
-    tempEvent: temperatures,
-    status: statuses
-  }) as any as CombinedStream
-
-  statuses.onValue(ds => {
-    const status = {instance: ds.instance, tag: 'd', vcc: ds.vcc, ts: new Date().toISOString(), parent: ds.parent}
-    displayStatusCb(status)
-  })
-  combined.onValue(v => renderOutsideTemp(v.tempEvent.temperature, v.status.vcc, v.status.instance, localTimeFor(v.tempEvent.ts)))
-}
-
-function renderOutsideTemp(temperature: number, vcc: number, instance: string, timestamp: LocalTime) {
-  const tempStr = (temperature > 0 ? '+' : '') + temperature.toPrecision(3)
-  const displayData = [
-    {c: 's', i: 0, x: 0, y: 8, font: 8, msg: `Outside`},
-    {c: 's', i: 1, x: 0, y: 33, font: 18, msg: `${tempStr}C`},
-    {c: 's', i: 2, x: 50, y: 48, font: 8, msg: `${(vcc / 1000).toFixed(3)}V`},
-    {c: 's', i: 3, x: 0, y: 48, font: 8, msg: timestamp.truncatedTo(ChronoUnit.MINUTES)},
-    {c: 's', i: 4, x: 60, y: 8, font: 8, msg: instance}
-  ]
-  console.log(`Sending temperature: ${tempStr}C`)
-  postJson(parse(`coap://[${DISPLAY_ADDRESS}]/api/display`), displayData, false)
-}
-
-function statusesWithInterval(): StatusStream {
-  return Bacon.once('').concat(Bacon.interval(VCC_POLLING_INTERVAL_MS, ''))
-    .flatMapLatest(() => Bacon.fromPromise(getJson(parse(`coap://[${DISPLAY_ADDRESS}]/api/status`))))
+export function statusesWithInterval(displayAddress: string, interval: Duration): StatusStream {
+  return Bacon.once('').concat(Bacon.interval(interval.toMillis(), ''))
+    .flatMapLatest(() => Bacon.fromPromise(getJson(parse(`coap://[${displayAddress}]/api/status`))))
     .map(res => JSON.parse(res.payload))
+    .map(ds => ({
+      instance: ds.instance,
+      tag: 'd' as DisplayTag,
+      vcc: ds.vcc,
+      ts: new Date().toISOString(),
+      parent: ds.parent
+    }))
 }
 
-function temperaturesWithInterval(tempEvents: TempEventStream): TempEventStream {
+export function temperaturesWithInterval(interval: Duration, tempEvents: TempEventStream): TempEventStream {
   return tempEvents
     .first()
     .merge(tempEvents
       .toProperty()
-      .sample(TEMP_RENDERING_INTERVAL_MS)
+      .sample(interval.toMillis())
     )
 }
 
-function localTimeFor(timestamp: string): LocalTime {
+export function localTimeFor(timestamp: string): LocalTime {
   return ZonedDateTime
     .parse(timestamp)
     .withZoneSameInstant(ZoneId.of('Europe/Helsinki'))
