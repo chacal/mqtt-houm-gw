@@ -13,7 +13,7 @@ require('js-joda-timezone')
 type CombinedStream = Bacon.EventStream<any, { tempEvent: ITemperatureEvent, status: DisplayStatus }>
 
 const DISPLAY_ADDRESS = '2001:2003:f0a2:9c9b:4863:159b:002d:b18d'
-const TEMP_RENDERING_INTERVAL_MS = 2 * 60000
+const TEMP_RENDERING_INTERVAL_MS = 10 * 61000
 const VCC_POLLING_INTERVAL_MS = 10 * 60000
 
 
