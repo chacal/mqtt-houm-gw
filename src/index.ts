@@ -1,5 +1,5 @@
-import {Mqtt, SensorEvents} from '@chacal/js-utils'
-import {setupUpstairsToilet, setupDownstairsToilet} from './rules'
+import { Mqtt, SensorEvents } from '@chacal/js-utils'
+import { setupUpstairsToilet, setupDownstairsToilet } from './rules'
 import setupD100 from './D100'
 import setupD101 from './D101'
 import ISensorEvent = SensorEvents.ISensorEvent

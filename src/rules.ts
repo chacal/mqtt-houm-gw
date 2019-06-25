@@ -1,11 +1,11 @@
 import Bacon = require('baconjs')
-import {SensorEvents} from "@chacal/js-utils"
-import {LocalTime} from 'js-joda'
+import { SensorEvents } from '@chacal/js-utils'
+import { LocalTime } from 'js-joda'
 import ISensorEvent = SensorEvents.ISensorEvent
 import IPirEvent = SensorEvents.IPirEvent
-import {turnOn, turnOff, applyScene} from "./houm"
-import {Lights} from "./Lights"
-import {Scenes} from "./Scenes"
+import { turnOn, turnOff, applyScene } from './houm'
+import { Lights } from './Lights'
+import { Scenes } from './Scenes'
 
 
 type SensorEventStream = Bacon.EventStream<any, ISensorEvent>

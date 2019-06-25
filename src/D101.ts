@@ -1,9 +1,9 @@
-import {parse} from 'url'
-import {LocalTime, ChronoUnit, Duration} from 'js-joda'
+import { parse } from 'url'
+import { LocalTime, ChronoUnit, Duration } from 'js-joda'
 import Bacon = require('baconjs')
 import { SensorEvents, Coap, NetworkDisplay } from '@chacal/js-utils'
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
-import {TempEventStream} from './index'
+import { TempEventStream } from './index'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import { localTimeFor, temperaturesWithInterval } from './utils'
 
@@ -31,7 +31,7 @@ export default function setupNetworkDisplay(tempEvents: TempEventStream, display
 function renderOutsideTemp(temperature: number, vcc: number, instance: string, timestamp: LocalTime) {
   const tempStr = (temperature > 0 ? '+' : '') + temperature.toPrecision(3)
   const displayData = [
-    { c: 'c'},
+    { c: 'c' },
     { c: 's', i: 1, x: 5, y: 23, font: 18, msg: `Outside` },
     { c: 's', i: 2, x: 50, y: 80, font: 35, msg: `${tempStr}C` },
     { c: 's', i: 3, x: 215, y: 123, font: 18, msg: `${(vcc / 1000).toFixed(3)}V` },
