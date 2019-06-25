@@ -2,8 +2,6 @@ import {Mqtt, SensorEvents} from '@chacal/js-utils'
 import {setupUpstairsToilet, setupDownstairsToilet} from './rules'
 import setupD100 from './D100'
 import setupD101 from './D101'
-import setupD102 from './D102'
-import setupD103 from './D103'
 import ISensorEvent = SensorEvents.ISensorEvent
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
@@ -30,8 +28,6 @@ setupUpstairsToilet(sensorEvents)
 setupDownstairsToilet(sensorEvents)
 setupD100(outsideTempEvents, publishThreadDisplayStatus)
 setupD101(outsideTempEvents, publishThreadDisplayStatus)
-setupD102(outsideTempEvents, publishThreadDisplayStatus)
-setupD103(outsideTempEvents, publishThreadDisplayStatus)
 
 
 function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
