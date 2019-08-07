@@ -1,4 +1,5 @@
 import { Mqtt, SensorEvents } from '@chacal/js-utils'
+import { EventStream } from 'baconjs'
 import { setupUpstairsToilet, setupDownstairsToilet } from './rules'
 import setupD100 from './D100'
 import setupD101 from './D101'
@@ -6,7 +7,7 @@ import ISensorEvent = SensorEvents.ISensorEvent
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
-export type TempEventStream = Bacon.EventStream<any, ITemperatureEvent>
+export type TempEventStream = EventStream<ITemperatureEvent>
 
 const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtt://mqtt-home.chacal.fi'
 const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined

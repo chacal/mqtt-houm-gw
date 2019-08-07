@@ -1,4 +1,4 @@
-import Bacon = require('baconjs')
+import { EventStream, later } from 'baconjs'
 import { SensorEvents } from '@chacal/js-utils'
 import { LocalTime } from 'js-joda'
 import ISensorEvent = SensorEvents.ISensorEvent
@@ -8,8 +8,8 @@ import { Lights } from './Lights'
 import { Scenes } from './Scenes'
 
 
-type SensorEventStream = Bacon.EventStream<any, ISensorEvent>
-type PirEventStream = Bacon.EventStream<any, IPirEvent>
+type SensorEventStream = EventStream<ISensorEvent>
+type PirEventStream = EventStream<IPirEvent>
 
 const PIR_TURN_ON_DEBOUNCE_MS = 15000
 const PIR_TURN_OFF_DELAY_MS = 120000
@@ -67,7 +67,7 @@ function setupPirLights(pirEvents: PirEventStream, onHandler: () => void, offHan
 
   pirEvents
     .filter(e => e.motionDetected)
-    .flatMapLatest(e => Bacon.later(PIR_TURN_OFF_DELAY_MS, e))
+    .flatMapLatest(e => later(PIR_TURN_OFF_DELAY_MS, e))
     .doAction(e => console.log(`OFF: ${JSON.stringify(e)}`))
     .onValue(offHandler)
 }

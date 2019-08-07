@@ -1,6 +1,6 @@
 import { parse } from 'url'
+import { combineTemplate, EventStream } from 'baconjs'
 import { LocalTime, ChronoUnit, Duration } from 'js-joda'
-import Bacon = require('baconjs')
 import { SensorEvents, Coap, NetworkDisplay } from '@chacal/js-utils'
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import { TempEventStream } from './index'
@@ -9,7 +9,7 @@ import { localTimeFor, temperaturesWithInterval } from './utils'
 
 require('js-joda-timezone')
 
-type CombinedStream = Bacon.EventStream<any, { tempEvent: ITemperatureEvent, status: NetworkDisplay.DisplayStatus }>
+type CombinedStream = EventStream<{ tempEvent: ITemperatureEvent, status: NetworkDisplay.DisplayStatus }>
 
 const DISPLAY_ADDRESS = '2001:2003:f0a2:9c9b:0a7b:c40f:550a:832f'
 const TEMP_RENDERING_INTERVAL_MS = 10 * 61000
@@ -19,7 +19,7 @@ const VCC_POLLING_INTERVAL_MS = 10 * 60000
 export default function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
   const statuses = NetworkDisplay.statusesWithInterval(DISPLAY_ADDRESS, VCC_POLLING_INTERVAL_MS)
   const temperatures = temperaturesWithInterval(Duration.ofMillis(TEMP_RENDERING_INTERVAL_MS), tempEvents)
-  const combined = Bacon.combineTemplate({
+  const combined = combineTemplate({
     tempEvent: temperatures,
     status: statuses
   }) as any as CombinedStream
