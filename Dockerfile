@@ -1,9 +1,7 @@
 FROM node:12-slim
 ENV NODE_ENV=production
+ENV TZ="Europe/Helsinki"
 WORKDIR /opt/app
-
-RUN echo "Europe/Helsinki" > /etc/timezone
-RUN dpkg-reconfigure -f noninteractive tzdata
 
 COPY package.json package-lock.json ./
 RUN npm install
