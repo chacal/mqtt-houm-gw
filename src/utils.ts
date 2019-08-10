@@ -32,6 +32,11 @@ export function renderCenteredText(ctx: CanvasRenderingContext2D, text: string, 
   ctx.fillText(text, x - getTextCenter(ctx, text).x, y)
 }
 
+export function renderRightAdjustedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
+  const t = ctx.measureText(text)
+  ctx.fillText(text, x - t.width, y)
+}
+
 export function renderImage(ctx: CanvasRenderingContext2D, img: Buffer, x: number, y: number, w: number, h: number) {
   return new Promise<ImageData>((resolve, reject) => {
     const image = new Image()

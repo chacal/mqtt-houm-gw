@@ -69,7 +69,7 @@ function getFirstShownForecastTimes(now: ZonedDateTime) {
 // This is only for testing
 export function renderForecastToPng(city: string) {
   getCityForecastItems(city)
-    .then(forecasts => render(21.457, 2946, 'D101', LocalTime.now(), forecasts))
+    .then(forecasts => render(21.457, 2946, 'D101', -68, forecasts))
     .then(imageData => saveToPngFile(imageData, 'test.png'))
     .then(() => console.log('All done!'))
 }

@@ -1,5 +1,5 @@
 import { combineTemplate, fromPromise } from 'baconjs'
-import { LocalTime, Duration } from 'js-joda'
+import { LocalTime, Duration, ChronoUnit } from 'js-joda'
 import { zip } from 'lodash'
 import { SensorEvents, NetworkDisplay } from '@chacal/js-utils'
 import { CanvasRenderingContext2D } from 'canvas'
@@ -7,10 +7,9 @@ import { CanvasRenderingContext2D } from 'canvas'
 import { TempEventStream } from './index'
 import {
   getContext,
-  localTimeFor,
   paddedHoursFor,
   renderCenteredText,
-  renderImage, sendImageToDisplay,
+  renderImage, renderRightAdjustedText, sendImageToDisplay,
   temperaturesWithInterval
 } from './utils'
 import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
@@ -43,20 +42,30 @@ export default function setupNetworkDisplay(tempEvents: TempEventStream, display
 
   combined
     .flatMapLatest(v =>
-      fromPromise(render(v.tempEvent.temperature, v.status.vcc, v.status.instance, localTimeFor(v.tempEvent.ts), v.forecasts))
+      fromPromise(render(v.tempEvent.temperature, v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.forecasts))
     )
     .onValue(imageData => sendImageToDisplay(D101_ADDRESS, imageData))
 }
 
-export function render(temperature: number, vcc: number, instance: string, timestamp: LocalTime, forecasts: ForecastItem[]) {
+export function render(temperature: number, vcc: number, instance: string, rssi: number, forecasts: ForecastItem[]) {
   const ctx = getContext(DISPLAY_WIDTH, DISPLAY_HEIGHT)
   renderTemperature(ctx, temperature)
+  renderStatusFields(ctx, vcc, instance, rssi)
   return renderForecasts(ctx, forecasts)
 }
 
 function renderTemperature(ctx: CanvasRenderingContext2D, temperature: number) {
   ctx.font = 'bold 40px Helvetica'
   renderCenteredText(ctx, temperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 31)
+}
+
+function renderStatusFields(ctx: CanvasRenderingContext2D, vcc: number, instance: string, rssi: number) {
+  ctx.font = 'bold 14px Roboto'
+  ctx.fillText(instance, 2, 12)
+  ctx.fillText(LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), 2, 25)
+
+  renderRightAdjustedText(ctx, `${(vcc / 1000).toFixed(3)}V`, 294, 12)
+  renderRightAdjustedText(ctx, `${rssi}dBm`, 294, 25)
 }
 
 function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[]) {
@@ -80,20 +89,3 @@ function renderForecast(ctx: CanvasRenderingContext2D, x: number, forecast: Fore
 
   return renderImage(ctx, forecast.symbolSvg, x - 24, 40, 50, 50)
 }
-
-
-/*
-function renderOutsideTemp(temperature: number, vcc: number, instance: string, timestamp: LocalTime) {
-  const tempStr = (temperature > 0 ? '+' : '') + temperature.toPrecision(3)
-  const displayData = [
-    { c: 'c' },
-    { c: 's', i: 1, x: 5, y: 23, font: 18, msg: `Outside` },
-    { c: 's', i: 2, x: 50, y: 80, font: 35, msg: `${tempStr}C` },
-    { c: 's', i: 3, x: 215, y: 123, font: 18, msg: `${(vcc / 1000).toFixed(3)}V` },
-    { c: 's', i: 4, x: 5, y: 123, font: 18, msg: timestamp.truncatedTo(ChronoUnit.MINUTES) },
-    { c: 's', i: 5, x: 235, y: 23, font: 18, msg: instance }
-  ]
-  console.log(`Sending temperature ${tempStr}C to ${DISPLAY_ADDRESS}`)
-  Coap.postJson(parse(`coap://[${DISPLAY_ADDRESS}]/api/display`), displayData, false)
-}
-*/
