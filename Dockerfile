@@ -1,9 +1,9 @@
-FROM node:alpine
+FROM node:12-slim
 ENV NODE_ENV=production
 WORKDIR /opt/app
 
-RUN apk add -U tzdata
-RUN cp /usr/share/zoneinfo/Europe/Helsinki /etc/localtime
+RUN echo "Europe/Helsinki" > /etc/timezone
+RUN dpkg-reconfigure -f noninteractive tzdata
 
 COPY package.json package-lock.json ./
 RUN npm install
