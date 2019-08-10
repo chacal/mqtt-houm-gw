@@ -1,33 +1,87 @@
-import { parse } from 'url'
-import { combineTemplate, EventStream } from 'baconjs'
-import { LocalTime, ChronoUnit, Duration } from 'js-joda'
-import { SensorEvents, Coap, NetworkDisplay } from '@chacal/js-utils'
-import ITemperatureEvent = SensorEvents.ITemperatureEvent
+import { combineTemplate, fromPromise } from 'baconjs'
+import { LocalTime, Duration } from 'js-joda'
+import { zip } from 'lodash'
+import { SensorEvents, NetworkDisplay } from '@chacal/js-utils'
+import { CanvasRenderingContext2D } from 'canvas'
+
 import { TempEventStream } from './index'
+import {
+  getContext,
+  localTimeFor,
+  paddedHoursFor,
+  renderCenteredText,
+  renderImage, sendImageToDisplay,
+  temperaturesWithInterval
+} from './utils'
+import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
+
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
-import { localTimeFor, temperaturesWithInterval } from './utils'
 
 require('js-joda-timezone')
 
-type CombinedStream = EventStream<{ tempEvent: ITemperatureEvent, status: NetworkDisplay.DisplayStatus }>
 
-const DISPLAY_ADDRESS = '2001:2003:f0a2:9c9b:0a7b:c40f:550a:832f'
+const D101_ADDRESS = '2001:2003:f0a2:9c9b:0a7b:c40f:550a:832f'
+const DISPLAY_WIDTH = 296
+const DISPLAY_HEIGHT = 128
+
 const TEMP_RENDERING_INTERVAL_MS = 10 * 61000
 const VCC_POLLING_INTERVAL_MS = 10 * 60000
+const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
 
 
 export default function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
-  const statuses = NetworkDisplay.statusesWithInterval(DISPLAY_ADDRESS, VCC_POLLING_INTERVAL_MS)
+  const statuses = NetworkDisplay.statusesWithInterval(D101_ADDRESS, VCC_POLLING_INTERVAL_MS)
   const temperatures = temperaturesWithInterval(Duration.ofMillis(TEMP_RENDERING_INTERVAL_MS), tempEvents)
+  const forecasts = cityForecastsWithInterval('espoo', FORECAST_UPDATE_INTERVAL_MS)
   const combined = combineTemplate({
     tempEvent: temperatures,
-    status: statuses
-  }) as any as CombinedStream
+    status: statuses,
+    forecasts
+  })
 
   statuses.onValue(displayStatusCb)
-  combined.onValue(v => renderOutsideTemp(v.tempEvent.temperature, v.status.vcc, v.status.instance, localTimeFor(v.tempEvent.ts)))
+
+  combined
+    .flatMapLatest(v =>
+      fromPromise(render(v.tempEvent.temperature, v.status.vcc, v.status.instance, localTimeFor(v.tempEvent.ts), v.forecasts))
+    )
+    .onValue(imageData => sendImageToDisplay(D101_ADDRESS, imageData))
 }
 
+export function render(temperature: number, vcc: number, instance: string, timestamp: LocalTime, forecasts: ForecastItem[]) {
+  const ctx = getContext(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+  renderTemperature(ctx, temperature)
+  return renderForecasts(ctx, forecasts)
+}
+
+function renderTemperature(ctx: CanvasRenderingContext2D, temperature: number) {
+  ctx.font = '50px Roboto'
+  renderCenteredText(ctx, temperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 40)
+}
+
+function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[]) {
+  const forecastColumnXCoords = [30, 110, 190, 266]
+
+  return Promise.all(
+    zip(forecastColumnXCoords, forecasts)
+      .map(([x, forecast]) => renderForecast(ctx, x, forecast))
+  )
+    .then(() => ctx.getImageData(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT))
+}
+
+function renderForecast(ctx: CanvasRenderingContext2D, x: number, forecast: ForecastItem) {
+  ctx.font = 'bold 16px Roboto'
+  renderCenteredText(ctx, Math.round(forecast.temperature) + '°C', x, 109)
+
+  ctx.font = '14px Roboto'
+  renderCenteredText(ctx, paddedHoursFor(forecast), x, 62)
+  renderCenteredText(ctx, forecast.precipitation.toFixed(1) + ' mm', x, 125)
+
+  return renderImage(ctx, forecast.symbolSvg, x - 20, 59, 40, 40)
+}
+
+
+/*
 function renderOutsideTemp(temperature: number, vcc: number, instance: string, timestamp: LocalTime) {
   const tempStr = (temperature > 0 ? '+' : '') + temperature.toPrecision(3)
   const displayData = [
@@ -41,3 +95,4 @@ function renderOutsideTemp(temperature: number, vcc: number, instance: string, t
   console.log(`Sending temperature ${tempStr}C to ${DISPLAY_ADDRESS}`)
   Coap.postJson(parse(`coap://[${DISPLAY_ADDRESS}]/api/display`), displayData, false)
 }
+*/

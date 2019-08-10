@@ -15,22 +15,23 @@ const MQTT_PASSWORD = process.env.MQTT_PASSWORD || undefined
 
 const OUTSIDE_TEMP_SENSOR_INSTANCE = 'S210'
 
+main()
 
-const mqttClient = Mqtt.startMqttClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
-mqttClient.subscribe('/sensor/+/+/state')
+function main() {
+  const mqttClient = Mqtt.startMqttClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
+  mqttClient.subscribe('/sensor/+/+/state')
 
+  const sensorEvents = Mqtt.messageStreamFrom(mqttClient)
+    .map(msg => JSON.parse(msg.toString()) as ISensorEvent)
 
-const sensorEvents = Mqtt.messageStreamFrom(mqttClient)
-  .map(msg => JSON.parse(msg.toString()) as ISensorEvent)
+  const outsideTempEvents = sensorEvents.filter(e => SensorEvents.isTemperature(e) && e.instance === OUTSIDE_TEMP_SENSOR_INSTANCE) as TempEventStream
 
-const outsideTempEvents = sensorEvents.filter(e => SensorEvents.isTemperature(e) && e.instance === OUTSIDE_TEMP_SENSOR_INSTANCE) as TempEventStream
+  setupUpstairsToilet(sensorEvents)
+  setupDownstairsToilet(sensorEvents)
+  setupD100(outsideTempEvents, publishThreadDisplayStatus)
+  setupD101(outsideTempEvents, publishThreadDisplayStatus)
 
-setupUpstairsToilet(sensorEvents)
-setupDownstairsToilet(sensorEvents)
-setupD100(outsideTempEvents, publishThreadDisplayStatus)
-setupD101(outsideTempEvents, publishThreadDisplayStatus)
-
-
-function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
-  mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
+  function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
+    mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
+  }
 }
