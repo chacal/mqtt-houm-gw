@@ -55,8 +55,8 @@ export function render(temperature: number, vcc: number, instance: string, times
 }
 
 function renderTemperature(ctx: CanvasRenderingContext2D, temperature: number) {
-  ctx.font = '50px Roboto'
-  renderCenteredText(ctx, temperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 40)
+  ctx.font = 'bold 40px Helvetica'
+  renderCenteredText(ctx, temperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 31)
 }
 
 function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[]) {
@@ -70,14 +70,15 @@ function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[
 }
 
 function renderForecast(ctx: CanvasRenderingContext2D, x: number, forecast: ForecastItem) {
-  ctx.font = 'bold 16px Roboto'
-  renderCenteredText(ctx, Math.round(forecast.temperature) + '°C', x, 109)
+  ctx.font = 'bold 20px Helvetica'
+  renderCenteredText(ctx, Math.round(forecast.temperature) + '°C', x, 106)
 
-  ctx.font = '14px Roboto'
-  renderCenteredText(ctx, paddedHoursFor(forecast), x, 62)
-  renderCenteredText(ctx, forecast.precipitation.toFixed(1) + ' mm', x, 125)
+  ctx.font = 'bold 15px Helvetica'
+  renderCenteredText(ctx, paddedHoursFor(forecast), x, 48)
+  ctx.font = 'bold 16px Helvetica'
+  renderCenteredText(ctx, forecast.precipitation.toFixed(1), x, 125)
 
-  return renderImage(ctx, forecast.symbolSvg, x - 20, 59, 40, 40)
+  return renderImage(ctx, forecast.symbolSvg, x - 24, 40, 50, 50)
 }
 
 
