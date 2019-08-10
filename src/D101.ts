@@ -1,8 +1,9 @@
 import { combineTemplate, fromPromise } from 'baconjs'
 import { LocalTime, Duration, ChronoUnit } from 'js-joda'
 import { zip } from 'lodash'
+import { resolve } from 'path'
 import { SensorEvents, NetworkDisplay } from '@chacal/js-utils'
-import { CanvasRenderingContext2D } from 'canvas'
+import { CanvasRenderingContext2D, registerFont } from 'canvas'
 
 import { TempEventStream } from './index'
 import {
@@ -27,6 +28,8 @@ const TEMP_RENDERING_INTERVAL_MS = 10 * 61000
 const VCC_POLLING_INTERVAL_MS = 10 * 60000
 const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
 
+registerFont(resolve(__dirname, '../src/Roboto-Bold.ttf'), { family: 'Roboto', weight: 'bold' })
+registerFont(resolve(__dirname, '../src/OpenSans-Bold.ttf'), { family: 'Open Sans', weight: 'bold' })
 
 export default function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
   const statuses = NetworkDisplay.statusesWithInterval(D101_ADDRESS, VCC_POLLING_INTERVAL_MS)
@@ -55,7 +58,7 @@ export function render(temperature: number, vcc: number, instance: string, rssi:
 }
 
 function renderTemperature(ctx: CanvasRenderingContext2D, temperature: number) {
-  ctx.font = 'bold 40px Helvetica'
+  ctx.font = 'bold 40px "Open Sans"'
   renderCenteredText(ctx, temperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 31)
 }
 
