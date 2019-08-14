@@ -64,5 +64,7 @@ export function getContext(w: number, h: number, rotate: boolean = false) {
 
 export function sendImageToDisplay(ipv6Destination: string, image: ImageData) {
   const payload = gzipSync(toBinaryImage(image))
-  return Coap.postOctetStream(parse(`coap://[${ipv6Destination}]/api/image`), payload, false)
+  const url = `coap://[${ipv6Destination}]/api/image`
+  console.log(`Sending ${payload.length} bytes to ${url}`)
+  return Coap.postOctetStream(parse(url), payload, false)
 }
