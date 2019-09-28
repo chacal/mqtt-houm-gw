@@ -58,6 +58,20 @@ export function setupDownstairsToilet(sensorEvents: SensorEventStream) {
   )
 }
 
+export function setupStorage(sensorEvents: SensorEventStream) {
+  const INSTANCE1 = 'P300'
+  const INSTANCE2 = 'P301'
+  const TAG = 'k'
+
+  const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
+    .merge(recentEventsByInstanceAndTag(sensorEvents, INSTANCE2, TAG)) as PirEventStream
+
+  setupPirLights(pirEvents,
+    () => turnOn(Lights.Upstairs.Storage.Ceiling, 255),
+    () => turnOff(Lights.Upstairs.Storage.Ceiling)
+  )
+}
+
 function setupPirLights(pirEvents: PirEventStream, onHandler: () => void, offHandler: () => void) {
   pirEvents
     .filter(e => e.motionDetected)

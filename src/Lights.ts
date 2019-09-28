@@ -11,6 +11,9 @@ export const Lights = {
   Upstairs: {
     Toilet: {
       LEDStrip: '50b62686-1ea0-48eb-b8d4-e28da424ef94'
+    },
+    Storage: {
+      Ceiling: '8deb9610-8ad8-4936-9ede-9aea45138cf2'
     }
   }
 }
