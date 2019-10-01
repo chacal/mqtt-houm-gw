@@ -5,6 +5,7 @@ import setupD101 from './D101'
 import ISensorEvent = SensorEvents.ISensorEvent
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
+import setupImpulseListener from './ImpulseListener'
 
 export type TempEventStream = EventStream<ITemperatureEvent>
 
@@ -29,6 +30,7 @@ function main() {
   setupDownstairsToilet(sensorEvents)
   setupStorage(sensorEvents)
   setupD101(outsideTempEvents, publishThreadDisplayStatus)
+  setupImpulseListener(mqttClient)
 
   function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
     mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
