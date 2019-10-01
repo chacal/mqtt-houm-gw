@@ -12,3 +12,5 @@ RUN ./node_modules/.bin/tsc
 CMD ["node", "./built/index.js"]
 
 USER node
+
+EXPOSE 5555/udp
