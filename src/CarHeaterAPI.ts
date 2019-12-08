@@ -2,6 +2,8 @@ import * as express from 'express'
 import { Express } from 'express'
 import { Request, Response } from 'express-serve-static-core'
 import CarHeater from './CarHeater'
+import { turnOn } from './houm'
+import { Lights } from './Lights'
 
 const PORT = 4000
 const STATE_FILE = process.env.CAR_HEATER_STATE_FILE || 'car_heater_state.json'
@@ -42,6 +44,7 @@ function updateHeaterState(req: Request, res: Response) {
 
 function enableHeater() {
   console.log(`Enabling heater!`)
+  turnOn(Lights.Outside.Frontyard.Car, 255)
 }
 
 function validateStateUpdate(obj: any): obj is StateUpdate {
