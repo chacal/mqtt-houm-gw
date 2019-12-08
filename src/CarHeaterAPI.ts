@@ -4,7 +4,8 @@ import { Request, Response } from 'express-serve-static-core'
 import CarHeater from './CarHeater'
 
 const PORT = 4000
-const STATE_FILE = 'car_heater_state.json'
+const STATE_FILE = process.env.CAR_HEATER_STATE_FILE || 'car_heater_state.json'
+const PUBLIC_DIR = process.env.CAR_HEATER_PUBLIC_DIR || '../src/public'
 
 interface StateUpdate {
   timerEnabled: boolean,
@@ -20,7 +21,7 @@ export default function setupCarHeaterAPI() {
 }
 
 function setupRoutes(app: Express) {
-  app.use(express.static('../src/public'))
+  app.use(express.static(PUBLIC_DIR))
   app.use(express.json())
   app.get('/heater', getHeaterState)
   app.post('/heater', updateHeaterState)

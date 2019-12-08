@@ -14,3 +14,4 @@ CMD ["node", "./built/index.js"]
 USER node
 
 EXPOSE 5555/udp
+EXPOSE 4000/tcp
