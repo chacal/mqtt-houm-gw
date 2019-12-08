@@ -6,6 +6,7 @@ import ISensorEvent = SensorEvents.ISensorEvent
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import setupImpulseListener from './ImpulseListener'
+import setupCarHeaterAPI from './CarHeaterAPI'
 
 export type TempEventStream = EventStream<ITemperatureEvent>
 
@@ -31,6 +32,7 @@ function main() {
   setupStorage(sensorEvents)
   setupD101(outsideTempEvents, publishThreadDisplayStatus)
   setupImpulseListener(mqttClient)
+  setupCarHeaterAPI()
 
   function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
     mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
