@@ -46,14 +46,20 @@ function App() {
         </Grid>
         <Grid item xs={6}>
           <LabeledControl
-            control={<Typography>{formatHeatingStart(heaterState.heatingStart)}</Typography>}
-            label="Heating start time"
+            control={<Typography>{formatHeatingTime(heaterState.heatingStart, heaterState.readyTime)}</Typography>}
+            label="Heating time"
           />
         </Grid>
         <Grid item xs={6}>
           <LabeledControl
             control={<Typography>-</Typography>}
             label="Heater state"
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <LabeledControl
+            control={<Typography>{formatHeatingStart(heaterState.heatingStart)}</Typography>}
+            label="Heating start time"
           />
         </Grid>
       </Grid>
@@ -65,6 +71,16 @@ function formatHeatingStart(heatingStart) {
   if (heatingStart !== undefined) {
     const prefix = new Date().getDay() === heatingStart.getDay() ? 'Today ' : 'Tomorrow '
     return prefix + timeStrFromDate(heatingStart)
+  } else {
+    return ''
+  }
+}
+
+function formatHeatingTime(heatingStart, readyTime) {
+  if (readyTime !== undefined && heatingStart !== undefined) {
+    const start = ZonedDateTime.from(JSJoda.nativeJs(heatingStart))
+    const end = ZonedDateTime.from(JSJoda.nativeJs(readyTime))
+    return JSJoda.Duration.between(start, end).toMinutes() + ' minutes'
   } else {
     return ''
   }
