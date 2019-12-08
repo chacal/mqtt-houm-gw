@@ -4,7 +4,7 @@ import { ChronoUnit, LocalTime, ZonedDateTime, ZoneId } from 'js-joda'
 import { CanvasRenderUtils } from '@chacal/js-utils'
 import saveToPngFile = CanvasRenderUtils.saveToPngFile
 import { render } from './D101'
-import { fromPromise, interval, once } from 'baconjs'
+import { Property, fromPromise, interval, once } from 'baconjs'
 
 require('js-joda-timezone')
 
@@ -15,18 +15,31 @@ export interface ForecastItem {
   symbolSvg: Buffer
 }
 
-interface HourlyForecast {
+export interface HourlyForecast {
   temperature: number,
   precipitation1h: number,
   weatherSymbol3: number,
   date: string
 }
 
-export function cityForecastsWithInterval(city: string, intervalMs: number) {
+function fetchForecastsWithInterval<T>(city: string, intervalMs: number, forecastFetcher: (city: string) => Promise<T>) {
   return once('')
     .concat(interval(intervalMs, ''))
-    .flatMapLatest(() => fromPromise(getCityForecastItems(city)))
+    .flatMapLatest(() => fromPromise(forecastFetcher(city)))
     .toProperty()
+}
+
+export function cityForecastsWithInterval(city: string, intervalMs: number) {
+  return fetchForecastsWithInterval(city, intervalMs, getCityForecastItems)
+}
+
+export function getAllCityForecastItemsWithInterval(city: string, intervalMs: number): Property<HourlyForecast[]> {
+  return fetchForecastsWithInterval(city, intervalMs, getAllCityForecastItems)
+}
+
+export function getAllCityForecastItems(city: string): Promise<HourlyForecast[]> {
+  return fetch(`https://www.tuuleeko.fi/fmiproxy/city-forecast?city=${city}`)
+    .then(res => res.json())
 }
 
 export function getCityForecastItems(city: string): Promise<ForecastItem[]> {

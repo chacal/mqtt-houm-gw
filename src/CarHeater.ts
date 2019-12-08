@@ -1,6 +1,7 @@
 import { convert, Duration, nativeJs, ZonedDateTime } from 'js-joda'
 import CarHeaterState from './CarHeaterState'
 import Timer from './Timer'
+import HeatingDurationCalculator from './HeatingDurationCalculator'
 
 export default class CarHeater {
   private state: CarHeaterState
@@ -8,14 +9,22 @@ export default class CarHeater {
     this.heaterStartAction()
     this.cancel()
   })
+  private durationCalculator = new HeatingDurationCalculator(() => {
+    this.state = CarHeaterState.load(this.stateFile)
+    this.update(this.state.readyTime, this.state.timerEnabled)
+  })
 
   constructor(private readonly stateFile: string, private readonly heaterStartAction: () => void) {
-    this.state = CarHeaterState.load(stateFile)
-    this.update(this.state.readyTime, this.state.timerEnabled)
   }
 
   update(readyTime, timerEnabled) {
-    const heatingDuration = calculateHeatingDuration(readyTime)
+    const heatingDuration = this.durationCalculator.calculateDuration(readyTime)
+    if (heatingDuration.isZero()) {
+      console.log('No heating required')
+      this.cancel()
+      return
+    }
+
     const heatingStart = ZonedDateTime.from(nativeJs(readyTime)).minusTemporalAmount(heatingDuration)
 
     if (heatingStart.isBefore(ZonedDateTime.now())) {
@@ -46,8 +55,3 @@ export default class CarHeater {
     return this.state
   }
 }
-
-function calculateHeatingDuration(readyTime: Date): Duration {
-  return Duration.ofMinutes(10)
-}
-
