@@ -1,6 +1,6 @@
 import { getAllCityForecastItemsWithInterval, HourlyForecast } from './CityForecasts'
 import { ChronoUnit, Duration, nativeJs, ZonedDateTime } from 'js-joda'
-import * as _ from 'lodash'
+import _ = require('lodash')
 
 const HEATING_START_TEMP = 10
 const FULL_HEATING_TEMP = -15

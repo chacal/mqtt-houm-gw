@@ -4,10 +4,13 @@
     "allowJs": true,
     "target": "es6",
     "module": "commonjs",
-    "sourceMap": true
+    "sourceMap": true,
+    "jsx": "react",
+    "esModuleInterop": true
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
   ],
   "exclude": [
     "./src/public/*"

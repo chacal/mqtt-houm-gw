@@ -1,4 +1,4 @@
-import * as express from 'express'
+import express = require('express')
 import { Express } from 'express'
 import { Request, Response } from 'express-serve-static-core'
 import CarHeater from './CarHeater'
@@ -7,7 +7,7 @@ import { Lights } from './Lights'
 
 const PORT = 4000
 const STATE_FILE = process.env.CAR_HEATER_STATE_FILE || 'car_heater_state.json'
-const PUBLIC_DIR = process.env.CAR_HEATER_PUBLIC_DIR || '../src/public'
+const PUBLIC_DIR = process.env.CAR_HEATER_PUBLIC_DIR || './public'
 
 interface StateUpdate {
   timerEnabled: boolean,
@@ -23,6 +23,7 @@ export default function setupCarHeaterAPI() {
 }
 
 function setupRoutes(app: Express) {
+  console.log('Using public dir:', PUBLIC_DIR)
   app.use(express.static(PUBLIC_DIR))
   app.use(express.json())
   app.get('/heater', getHeaterState)
