@@ -28,8 +28,8 @@ const TEMP_RENDERING_INTERVAL_MS = 10 * 61000
 const VCC_POLLING_INTERVAL_MS = 10 * 60000
 const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
 
-registerFont(resolve(__dirname, '../src/Roboto-Bold.ttf'), { family: 'Roboto', weight: 'bold' })
-registerFont(resolve(__dirname, '../src/OpenSans-Bold.ttf'), { family: 'Open Sans', weight: 'bold' })
+registerFont(resolve(__dirname, './Roboto-Bold.ttf'), { family: 'Roboto', weight: 'bold' })
+registerFont(resolve(__dirname, './OpenSans-Bold.ttf'), { family: 'Open Sans', weight: 'bold' })
 
 export default function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
   const statuses = NetworkDisplay.statusesWithInterval(D101_ADDRESS, VCC_POLLING_INTERVAL_MS)

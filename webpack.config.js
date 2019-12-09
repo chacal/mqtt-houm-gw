@@ -21,10 +21,10 @@ module.exports = {
     ],
   },
   plugins: [
-    new CopyWebpackPlugin([{
-      from: '*.html',
-      context: 'src/public'
-    }])
+    new CopyWebpackPlugin([
+      { from: '*.html', context: 'src/public' },
+      { from: '*.ttf', context: 'src', to: '..' },
+    ])
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js']
