@@ -76,7 +76,7 @@ function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[
 
   return Promise.all(
     zip(forecastColumnXCoords, forecasts)
-      .map(([x, forecast]) => renderForecast(ctx, x, forecast))
+      .map(([x, forecast]: [number, ForecastItem]) => renderForecast(ctx, x, forecast))
   )
     .then(() => ctx.getImageData(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT))
 }

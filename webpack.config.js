@@ -26,4 +26,7 @@ module.exports = {
       context: 'src/public'
     }])
   ],
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js']
+  },
 }

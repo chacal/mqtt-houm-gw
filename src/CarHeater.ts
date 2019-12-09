@@ -17,7 +17,7 @@ export default class CarHeater {
   constructor(private readonly stateFile: string, private readonly heaterStartAction: () => void) {
   }
 
-  update(readyTime, timerEnabled) {
+  update(readyTime: Date, timerEnabled: boolean) {
     const heatingDuration = this.durationCalculator.calculateDuration(readyTime)
     if (heatingDuration.isZero()) {
       console.log('No heating required')

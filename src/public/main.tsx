@@ -1,14 +1,29 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Button from '@material-ui/core/Button'
+import { createMuiTheme, CssBaseline, ThemeProvider } from '@material-ui/core'
+import App from './App'
 
-function App() {
-  return (
-    <Button variant="contained" color="primary">
-      Hello World
-    </Button>
-  )
-}
+require('js-joda-timezone')
 
-console.log('Works2!')
-ReactDOM.render(<App/>, document.querySelector('#root'))
+// Create a theme instance.
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#556cd6',
+    },
+    secondary: {
+      main: '#19857b',
+    },
+    background: {
+      default: '#fff',
+    },
+  },
+})
+
+ReactDOM.render(
+  <ThemeProvider theme={theme}>
+    <CssBaseline/>
+    <App/>
+  </ThemeProvider>,
+  document.querySelector('#root'),
+)
