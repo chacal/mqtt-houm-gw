@@ -1,8 +1,8 @@
-import React, { ChangeEvent } from 'react'
+import React, { ChangeEvent, useEffect, useState } from 'react'
 import { Container, Grid, makeStyles, Switch, Typography } from '@material-ui/core'
-import { useEffect, useState } from 'react'
-import { Duration, nativeJs, ZonedDateTime } from 'js-joda'
-import { LabeledControl, TimeField, timeStrFromDate } from './components'
+import { LabeledControl, TimeField } from './components'
+import { formatRelative, formatDistanceStrict } from 'date-fns'
+import enGB from 'date-fns/locale/en-GB'
 
 const appStyles = makeStyles(theme => ({
   root: {
@@ -78,8 +78,7 @@ export default function App() {
 
 function formatHeatingStart(heatingStart?: Date) {
   if (heatingStart !== undefined) {
-    const prefix = new Date().getDay() === heatingStart.getDay() ? 'Today ' : 'Tomorrow '
-    return prefix + timeStrFromDate(heatingStart)
+    return formatRelative(heatingStart, new Date(), { locale: enGB })
   } else {
     return ''
   }
@@ -87,9 +86,7 @@ function formatHeatingStart(heatingStart?: Date) {
 
 function formatHeatingTime(heatingStart?: Date, readyTime?: Date) {
   if (readyTime !== undefined && heatingStart !== undefined) {
-    const start = ZonedDateTime.from(nativeJs(heatingStart))
-    const end = ZonedDateTime.from(nativeJs(readyTime))
-    return Duration.between(start, end).toMinutes() + ' minutes'
+    return formatDistanceStrict(readyTime, heatingStart, { unit: 'minute' })
   } else {
     return ''
   }

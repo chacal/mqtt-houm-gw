@@ -3,8 +3,6 @@ import ReactDOM from 'react-dom'
 import { createMuiTheme, CssBaseline, ThemeProvider } from '@material-ui/core'
 import App from './App'
 
-require('js-joda-timezone')
-
 // Create a theme instance.
 const theme = createMuiTheme({
   palette: {

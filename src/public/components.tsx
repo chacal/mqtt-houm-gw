@@ -1,15 +1,7 @@
 import React, { ChangeEvent } from 'react'
-import {
-  convert,
-  DateTimeFormatter,
-  LocalDate,
-  LocalDateTime,
-  LocalTime,
-  nativeJs,
-  ZonedDateTime,
-  ZoneId
-} from 'js-joda'
 import { FormControlLabel, makeStyles, TextField } from '@material-ui/core'
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
+import { addDays, isPast, format, parse } from 'date-fns'
 
 interface TimeFieldProps {
   time?: Date
@@ -20,13 +12,12 @@ export function TimeField(props: TimeFieldProps) {
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const hhMMStr = e.target.value
-    let localInstant = LocalDate.now().atTime(LocalTime.parse(hhMMStr))
-    if (localInstant.isBefore(LocalDateTime.now())) {
-      localInstant = localInstant.plusDays(1)
+    let localInstant = parse(hhMMStr, 'HH:mm', new Date())
+    if (isPast(localInstant)) {
+      localInstant = addDays(localInstant, 1)
     }
-    const helsinkiZoned = localInstant.atZone(ZoneId.of('Europe/Helsinki'))
-    const utcInstant = helsinkiZoned.withZoneSameInstant(ZoneId.UTC)
-    props.onChange(convert(utcInstant).toDate())
+    const utcInstant = zonedTimeToUtc(localInstant, 'Europe/Helsinki')
+    props.onChange(utcInstant)
   }
 
   return <TextField
@@ -40,13 +31,11 @@ export function TimeField(props: TimeFieldProps) {
 }
 
 export function timeStrFromDate(date?: Date) {
-  return date !== undefined ?
-    toHelsinkiTime(ZonedDateTime.from(nativeJs(date))).format(DateTimeFormatter.ofPattern('HH:mm')) :
-    ''
+  return date !== undefined ? format(toHelsinkiTime(date), 'HH:mm') : ''
 }
 
-function toHelsinkiTime(zdt: ZonedDateTime) {
-  return zdt.withZoneSameInstant(ZoneId.of('Europe/Helsinki'))
+function toHelsinkiTime(date: Date) {
+  return utcToZonedTime(date, 'Europe/Helsinki')
 }
 
 
