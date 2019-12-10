@@ -99,18 +99,30 @@ function HeaterPanel(props: HeaterState) {
         />
       </Grid>
       <Grid item xs={6}>
-        <LabeledControl
-          control={<Typography>{formatHeatingState(heaterState)}</Typography>}
-          label={formatStateLabel(heaterState)}
-        />
+        <HeaterState {...heaterState}/>
       </Grid>
     </Grid>
   )
 }
 
+function HeaterState(heaterState: HeaterState) {
+  const [, setState] = useState<any>()
+
+  // Force re-render every second to update the remaining time
+  useEffect(() => {
+    const id = setInterval(() => setState({}), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  return (<LabeledControl
+    control={<Typography>{formatHeatingState(heaterState)}</Typography>}
+    label={formatStateLabel(heaterState)}
+  />)
+}
+
 function formatHeatingState(state: HeaterState) {
   const str = isFuture(state.heatingStart) ?
-    formatDistance(state.heatingStart, new Date(), { locale: enGB }) :
+    formatDistance(state.heatingStart, new Date(), { locale: enGB, includeSeconds: true }) :
     formatDistanceStrict(state.readyTime, new Date(), { unit: 'minute' })
   return 'in ' + str
 }
