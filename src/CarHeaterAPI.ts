@@ -2,7 +2,7 @@ import express = require('express')
 import { Express } from 'express'
 import { Request, Response } from 'express-serve-static-core'
 import CarHeater from './CarHeater'
-import { turnOn } from './houm'
+import { turnOff, turnOn } from './houm'
 import { Lights } from './Lights'
 
 const PORT = 4000
@@ -14,7 +14,7 @@ interface StateUpdate {
   readyTime: string
 }
 
-const heater = new CarHeater(STATE_FILE, enableHeater)
+const heater = new CarHeater(STATE_FILE, enableHeater, disableHeater)
 
 export default function setupCarHeaterAPI() {
   const app = express()
@@ -44,8 +44,13 @@ function updateHeaterState(req: Request, res: Response) {
 }
 
 function enableHeater() {
-  console.log(`Enabling heater!`)
+  console.log(`POSTing Houm to enable heater!`)
   turnOn(Lights.Outside.Frontyard.Car, 255)
+}
+
+function disableHeater() {
+  console.log(`POSTing Houm to disable heater!`)
+  turnOff(Lights.Outside.Frontyard.Car)
 }
 
 function validateStateUpdate(obj: any): obj is StateUpdate {

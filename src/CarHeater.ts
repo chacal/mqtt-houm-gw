@@ -2,7 +2,16 @@ import { convert, nativeJs, ZonedDateTime } from 'js-joda'
 import CarHeaterState from './CarHeaterState'
 import HeatingDurationCalculator from './HeatingDurationCalculator'
 import { Machine, interpret, Interpreter, assign } from 'xstate'
-import { addDays, differenceInMilliseconds, formatDistanceToNow, isFuture, isPast, set, startOfMinute } from 'date-fns'
+import {
+  addDays,
+  differenceInMilliseconds,
+  formatDistanceToNow,
+  isBefore,
+  isFuture,
+  isPast,
+  set,
+  startOfMinute
+} from 'date-fns'
 
 interface HeaterSchema {
   states: {
@@ -16,20 +25,24 @@ interface HeaterSchema {
   }
 }
 
+type HeaterEvents = { type: 'DISABLE' }
+
 export default class CarHeater {
-  private state: CarHeaterState
-  private fsmService: Interpreter<CarHeaterState, HeaterSchema, any>
+  private fsmService: Interpreter<CarHeaterState, HeaterSchema, HeaterEvents>
 
   private durationCalculator = new HeatingDurationCalculator(() => {
-    this.state = CarHeaterState.load(this.stateFile)
-    this.update(this.state.readyTime, this.state.timerEnabled)
+    const state = CarHeaterState.load(this.stateFile)
+    this.update(state.readyTime, state.timerEnabled)
   })
 
-  constructor(private readonly stateFile: string, private readonly heaterStartAction: () => void) {
+  constructor(private readonly stateFile: string,
+              private readonly heaterStartAction: () => void,
+              private readonly heaterStopAction: () => void) {
   }
 
   update(readyTime: Date, timerEnabled: boolean) {
     if (this.fsmService !== undefined) {
+      this.fsmService.send('DISABLE')
       this.fsmService.stop()
     }
 
@@ -42,32 +55,30 @@ export default class CarHeater {
 
     const heatingDuration = this.durationCalculator.calculateDuration(readyTime)
     console.log('Heating duration:', heatingDuration.toString())
-    if (heatingDuration.isZero()) {
-      console.log('No heating required')
-      return
-    }
 
     const heatingStart = ZonedDateTime.from(nativeJs(readyTime)).minusTemporalAmount(heatingDuration)
+    const state = new CarHeaterState(readyTime, convert(heatingStart).toDate(), timerEnabled)
 
-    this.changeToState(new CarHeaterState(readyTime, convert(heatingStart).toDate(), timerEnabled))
-    this.fsmService = interpret(createFSM(this.state)).onTransition(s => console.log('State:', s.value))
+    this.fsmService = interpret(createFSM(state, this.heaterStartAction, this.heaterStopAction))
+    this.fsmService.onChange(s => this.saveState(s))
+    this.fsmService.onTransition(s => console.log('State:', s.value))
     this.fsmService.start()
   }
 
-  private changeToState(state: CarHeaterState) {
-    this.state = state
-    CarHeaterState.save(this.stateFile, this.state)
-    console.log(`Using heater state: ${JSON.stringify(this.state)}`)
+  private saveState(state: CarHeaterState) {
+    CarHeaterState.save(this.stateFile, state)
+    console.log(`Using heater state: ${JSON.stringify(state)}`)
   }
 
   getState() {
-    return this.state
+    return this.fsmService.state.context
   }
 }
 
-function createFSM(state: CarHeaterState) {
-  return Machine(
+function createFSM(state: CarHeaterState, enableHeater: () => void, disableHeater: () => void) {
+  return Machine<CarHeaterState, HeaterSchema, HeaterEvents>(
     {
+      key: 'heater',
       context: state,
       initial: state.timerEnabled ? 'enabled' : 'disabled',
       states: {
@@ -80,7 +91,12 @@ function createFSM(state: CarHeaterState) {
             },
 
             heating: {
+              entry: 'enableHeater',
+              exit: disableHeater,
               after: { HEATING_DELAY: 'waiting' },
+              on: {
+                'DISABLE': '#heater.disabled'
+              }
             }
           }
         },
@@ -110,6 +126,13 @@ function createFSM(state: CarHeaterState) {
             return context
           }
         }),
+        enableHeater: (context: CarHeaterState) => {
+          if (isBefore(context.heatingStart, context.readyTime)) {
+            enableHeater()
+          } else {
+            console.log('Heating time is <= 0. Not enabling heater.')
+          }
+        }
       }
     }
   )
