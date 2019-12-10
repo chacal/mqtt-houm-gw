@@ -11,17 +11,13 @@ export default class HeatingDurationCalculator {
   forecasts: HourlyForecast[] = []
 
   constructor(onLoad: () => void) {
-    const forecasts = getAllCityForecastItemsWithInterval('espoo', 5 * 60 * 1000)
+    const forecasts = getAllCityForecastItemsWithInterval('espoo', 30 * 60 * 1000)
     forecasts.onValue(forecasts => this.forecasts = forecasts)
     forecasts.take(1).onValue(() => onLoad())
   }
 
   calculateDuration(readyTime: Date): Duration {
     const end = ZonedDateTime.from(nativeJs(readyTime))
-    const now = ZonedDateTime.now()
-    if (end.isBefore(now)) {
-      return Duration.ofSeconds(0)
-    }
 
     // Calculate 5 hour period before ready time
     const calculatePeriodLength = Duration.ofHours(5)
@@ -33,6 +29,7 @@ export default class HeatingDurationCalculator {
       .dropRightWhile(f => isLater(f.date, end.truncatedTo(ChronoUnit.HOURS).plusHours(1)))
       .value()
     const avgTemperature = _.sumBy(relevantForecasts, f => f.temperature) / relevantForecasts.length
+    console.log(`Using avg temp ${avgTemperature}°C from ${relevantForecasts.length} forecasts.`)
 
     // Determine heating duration. Scale linearly between min and full heating times depending on avg temperature.
     if (avgTemperature > HEATING_START_TEMP) {

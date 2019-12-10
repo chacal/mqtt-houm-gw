@@ -93,14 +93,8 @@ function HeaterPanel(props: HeaterState) {
       </Grid>
       <Grid item xs={6}>
         <LabeledControl
-          control={<Typography>-</Typography>}
-          label="Heater state"
-        />
-      </Grid>
-      <Grid item xs={6}>
-        <LabeledControl
           control={<Typography>{formatHeatingStart(heaterState.heatingStart)}</Typography>}
-          label="Start"
+          label="Starting"
         />
       </Grid>
     </Grid>
