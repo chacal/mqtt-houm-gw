@@ -14,17 +14,29 @@ const appStyles = makeStyles(theme => ({
 
 interface HeaterState {
   timerEnabled: boolean
-  readyTime?: Date,
-  heatingStart?: Date,
+  readyTime: Date,
+  heatingStart: Date
 }
 
 export default function App() {
   const classes = appStyles()
-  const [heaterState, setHeaterState] = useState<HeaterState>({ timerEnabled: false })
-
+  const [appState, setAppState] = useState<HeaterState>()
   useEffect(() => {
-    loadHeaterState(setHeaterState)
+    loadHeaterState()
+      .then(heater => setAppState(heater))
   }, [])
+
+  return (
+    <Container maxWidth='xs' className={classes.root}>
+      <h1>Car heater</h1>
+      {!appState ? 'Loading..' : <HeaterPanel {...appState}/>}
+    </Container>
+  )
+}
+
+
+function HeaterPanel(props: HeaterState) {
+  const [heaterState, setHeaterState] = useState(props)
 
   function readyTimeChanged(selectedTime: Date) {
     const nowInHelsinki = zonedTimeToUtc(new Date(), 'Europe/Helsinki')
@@ -32,55 +44,54 @@ export default function App() {
     const localInstant = isFuture(selectedTimeToday) ? selectedTimeToday : addDays(selectedTimeToday, 1)
     const utcInstant = startOfMinute(zonedTimeToUtc(localInstant, 'Europe/Helsinki'))
 
-    const newState = { ...heaterState, readyTime: utcInstant }
-    setHeaterState(newState)
-    saveHeaterState(newState, setHeaterState)
+    updateAndSaveState({ ...heaterState, readyTime: utcInstant })
   }
 
   function timerEnabledChanged(e: ChangeEvent<HTMLInputElement>) {
-    const newState = { ...heaterState, timerEnabled: e.target.checked }
-    setHeaterState(newState)
-    saveHeaterState(newState, setHeaterState)
+    updateAndSaveState({ ...heaterState, timerEnabled: e.target.checked })
+  }
+
+  function updateAndSaveState(state: HeaterState) {
+    setHeaterState(state)
+    saveHeaterState(state)
+      .then(setHeaterState)
   }
 
   return (
-    <Container maxWidth='xs' className={classes.root}>
-      <h1>Car heater</h1>
-      <Grid container spacing={4}>
-        <Grid item xs={6}>
-          <LabeledControl
-            control={<TimePicker value={heaterState.readyTime} onChange={readyTimeChanged}
-                                 ampm={false} minutesStep={5} style={{ width: '80px' }}/>}
-            label="Ready"
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <LabeledControl
-            control={<Switch checked={heaterState.timerEnabled} onChange={timerEnabledChanged}/>}
-            label="Timer"
-            center
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <LabeledControl
-            control={<Typography>{formatHeatingTime(heaterState.heatingStart, heaterState.readyTime)}</Typography>}
-            label="Heating"
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <LabeledControl
-            control={<Typography>-</Typography>}
-            label="Heater state"
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <LabeledControl
-            control={<Typography>{formatHeatingStart(heaterState.heatingStart)}</Typography>}
-            label="Start"
-          />
-        </Grid>
+    <Grid container spacing={4}>
+      <Grid item xs={6}>
+        <LabeledControl
+          control={<TimePicker value={heaterState.readyTime} onChange={readyTimeChanged}
+                               ampm={false} minutesStep={5} style={{ width: '80px' }}/>}
+          label="Ready"
+        />
       </Grid>
-    </Container>
+      <Grid item xs={6}>
+        <LabeledControl
+          control={<Switch checked={heaterState.timerEnabled} onChange={timerEnabledChanged}/>}
+          label="Timer"
+          center
+        />
+      </Grid>
+      <Grid item xs={6}>
+        <LabeledControl
+          control={<Typography>{formatHeatingTime(heaterState.heatingStart, heaterState.readyTime)}</Typography>}
+          label="Heating"
+        />
+      </Grid>
+      <Grid item xs={6}>
+        <LabeledControl
+          control={<Typography>-</Typography>}
+          label="Heater state"
+        />
+      </Grid>
+      <Grid item xs={6}>
+        <LabeledControl
+          control={<Typography>{formatHeatingStart(heaterState.heatingStart)}</Typography>}
+          label="Start"
+        />
+      </Grid>
+    </Grid>
   )
 }
 
@@ -100,24 +111,23 @@ function formatHeatingTime(heatingStart?: Date, readyTime?: Date) {
   }
 }
 
-function loadHeaterState(setHeaterState: (s: HeaterState) => void) {
-  fetch(`/heater`)
-    .then(res => handleStateResponse(res, setHeaterState))
+function loadHeaterState() {
+  return fetch(`/heater`)
+    .then(res => handleStateResponse(res))
 }
 
-function saveHeaterState(stateToSave: HeaterState, setHeaterState: (s: HeaterState) => void) {
-  fetch('/heater', {
+function saveHeaterState(stateToSave: HeaterState) {
+  return fetch('/heater', {
     method: 'POST',
     body: JSON.stringify(heaterStateToJSON(stateToSave)),
     headers: { 'Content-Type': 'application/json' },
   })
-    .then(res => handleStateResponse(res, setHeaterState))
+    .then(res => handleStateResponse(res))
 }
 
-function handleStateResponse(res: Response, setHeaterState: (s: HeaterState) => void) {
-  res.json()
+function handleStateResponse(res: Response) {
+  return res.json()
     .then(heaterStateFromJSON)
-    .then(setHeaterState)
 }
 
 function heaterStateToJSON(state: HeaterState) {
