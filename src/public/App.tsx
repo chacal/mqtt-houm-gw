@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { CircularProgress, Container, Grid, makeStyles, Paper, Switch, Typography } from '@material-ui/core'
 import { LabeledControl } from './components'
-import { formatRelative, formatDistanceStrict, addDays, isFuture, set, startOfMinute } from 'date-fns'
+import { formatDistance, formatDistanceStrict, addDays, isFuture, set, startOfMinute } from 'date-fns'
 import enGB from 'date-fns/locale/en-GB'
 import { TimePicker } from '@material-ui/pickers'
 import { zonedTimeToUtc } from 'date-fns-tz'
@@ -81,7 +81,7 @@ function HeaterPanel(props: HeaterState) {
       <Grid item xs={6}>
         <LabeledControl
           control={<Switch checked={heaterState.timerEnabled} onChange={timerEnabledChanged}/>}
-          label="Timer"
+          label="State"
           center
         />
       </Grid>
@@ -93,28 +93,27 @@ function HeaterPanel(props: HeaterState) {
       </Grid>
       <Grid item xs={6}>
         <LabeledControl
-          control={<Typography>{formatHeatingStart(heaterState.heatingStart)}</Typography>}
-          label="Starting"
+          control={<Typography>{formatHeatingState(heaterState)}</Typography>}
+          label={formatStateLabel(heaterState)}
         />
       </Grid>
     </Grid>
   )
 }
 
-function formatHeatingStart(heatingStart?: Date) {
-  if (heatingStart !== undefined) {
-    return formatRelative(heatingStart, new Date(), { locale: enGB })
-  } else {
-    return ''
-  }
+function formatHeatingState(state: HeaterState) {
+  const str = isFuture(state.heatingStart) ?
+    formatDistance(state.heatingStart, new Date(), { locale: enGB }) :
+    formatDistanceStrict(state.readyTime, new Date(), { unit: 'minute' })
+  return 'in ' + str
 }
 
-function formatHeatingTime(heatingStart?: Date, readyTime?: Date) {
-  if (readyTime !== undefined && heatingStart !== undefined) {
-    return formatDistanceStrict(readyTime, heatingStart, { unit: 'minute' })
-  } else {
-    return ''
-  }
+function formatStateLabel(state: HeaterState) {
+  return isFuture(state.heatingStart) ? 'Starting' : 'Ending'
+}
+
+function formatHeatingTime(heatingStart: Date, readyTime: Date) {
+  return formatDistanceStrict(readyTime, heatingStart, { unit: 'minute' })
 }
 
 function loadHeaterState() {
