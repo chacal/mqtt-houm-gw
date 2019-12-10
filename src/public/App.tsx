@@ -31,7 +31,7 @@ export default function App() {
 
   return (
     <Container maxWidth='xs' className={classes.root}>
-      <Typography variant="h5" className={classes.h5}>Car heater</Typography>
+      <Typography variant="h5" className={classes.h5}>Car heater timer</Typography>
       {!appState ? <LoadingIndicator/> : <HeaterPanel {...appState}/>}
     </Container>
   )
@@ -80,9 +80,16 @@ function HeaterPanel(props: HeaterState) {
       </Grid>
       <Grid item xs={6}>
         <LabeledControl
-          control={<Switch checked={heaterState.timerEnabled} onChange={timerEnabledChanged}/>}
-          label="State"
-          center
+          control={
+            <Grid component="label" container alignItems="center" spacing={0}>
+              <Grid item>Off</Grid>
+              <Grid item>
+                <Switch checked={heaterState.timerEnabled} onChange={timerEnabledChanged}/>
+              </Grid>
+              <Grid item>On</Grid>
+            </Grid>
+          }
+          label="Timer state"
         />
       </Grid>
       <Grid item xs={6}>
