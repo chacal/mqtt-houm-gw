@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
-import { Container, Grid, makeStyles, Switch, Typography } from '@material-ui/core'
+import { CircularProgress, Container, Grid, makeStyles, Paper, Switch, Typography } from '@material-ui/core'
 import { LabeledControl } from './components'
 import { formatRelative, formatDistanceStrict, addDays, isFuture, set, startOfMinute } from 'date-fns'
 import enGB from 'date-fns/locale/en-GB'
@@ -8,7 +8,10 @@ import { zonedTimeToUtc } from 'date-fns-tz'
 
 const appStyles = makeStyles(theme => ({
   root: {
-    marginTop: theme.spacing(3)
+    marginTop: theme.spacing(2)
+  },
+  h5: {
+    marginBottom: theme.spacing(2)
   }
 }))
 
@@ -28,12 +31,21 @@ export default function App() {
 
   return (
     <Container maxWidth='xs' className={classes.root}>
-      <h1>Car heater</h1>
-      {!appState ? 'Loading..' : <HeaterPanel {...appState}/>}
+      <Typography variant="h5" className={classes.h5}>Car heater</Typography>
+      {!appState ? <LoadingIndicator/> : <HeaterPanel {...appState}/>}
     </Container>
   )
 }
 
+function LoadingIndicator() {
+  return (
+    <Grid container justify='center' alignItems='center' style={{ height: '170px' }}>
+      <Grid item xs={4}>
+        <CircularProgress/>
+      </Grid>
+    </Grid>
+  )
+}
 
 function HeaterPanel(props: HeaterState) {
   const [heaterState, setHeaterState] = useState(props)
@@ -58,7 +70,7 @@ function HeaterPanel(props: HeaterState) {
   }
 
   return (
-    <Grid container spacing={4}>
+    <Grid container spacing={2}>
       <Grid item xs={6}>
         <LabeledControl
           control={<TimePicker value={heaterState.readyTime} onChange={readyTimeChanged}

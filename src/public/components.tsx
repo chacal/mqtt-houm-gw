@@ -6,9 +6,9 @@ const labelStyles = makeStyles(theme => ({
     alignItems: 'start',
   },
   label: {
-    fontSize: '14px',
-    color: '#6b6b6b',
-    marginBottom: '5px'
+    fontSize: '13px',
+    color: '#838383',
+    marginBottom: '1px'
   }
 }))
 
