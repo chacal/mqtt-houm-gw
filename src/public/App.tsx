@@ -1,8 +1,10 @@
 import React, { ChangeEvent, useEffect, useState } from 'react'
 import { Container, Grid, makeStyles, Switch, Typography } from '@material-ui/core'
-import { LabeledControl, TimeField } from './components'
-import { formatRelative, formatDistanceStrict } from 'date-fns'
+import { LabeledControl } from './components'
+import { formatRelative, formatDistanceStrict, addDays, isFuture, set, startOfMinute } from 'date-fns'
 import enGB from 'date-fns/locale/en-GB'
+import { TimePicker } from '@material-ui/pickers'
+import { zonedTimeToUtc } from 'date-fns-tz'
 
 const appStyles = makeStyles(theme => ({
   root: {
@@ -24,8 +26,13 @@ export default function App() {
     loadHeaterState(setHeaterState)
   }, [])
 
-  function readyTimeChanged(readyTime: Date) {
-    const newState = { ...heaterState, readyTime }
+  function readyTimeChanged(selectedTime: Date) {
+    const nowInHelsinki = zonedTimeToUtc(new Date(), 'Europe/Helsinki')
+    const selectedTimeToday = set(nowInHelsinki, { hours: selectedTime.getHours(), minutes: selectedTime.getMinutes() })
+    const localInstant = isFuture(selectedTimeToday) ? selectedTimeToday : addDays(selectedTimeToday, 1)
+    const utcInstant = startOfMinute(zonedTimeToUtc(localInstant, 'Europe/Helsinki'))
+
+    const newState = { ...heaterState, readyTime: utcInstant }
     setHeaterState(newState)
     saveHeaterState(newState, setHeaterState)
   }
@@ -42,21 +49,22 @@ export default function App() {
       <Grid container spacing={4}>
         <Grid item xs={6}>
           <LabeledControl
-            control={<TimeField time={heaterState.readyTime} onChange={readyTimeChanged}/>}
-            label="Ready time"
+            control={<TimePicker value={heaterState.readyTime} onChange={readyTimeChanged}
+                                 ampm={false} minutesStep={5} style={{ width: '80px' }}/>}
+            label="Ready"
           />
         </Grid>
         <Grid item xs={6}>
           <LabeledControl
             control={<Switch checked={heaterState.timerEnabled} onChange={timerEnabledChanged}/>}
-            label="Timer enabled"
+            label="Timer"
             center
           />
         </Grid>
         <Grid item xs={6}>
           <LabeledControl
             control={<Typography>{formatHeatingTime(heaterState.heatingStart, heaterState.readyTime)}</Typography>}
-            label="Heating time"
+            label="Heating"
           />
         </Grid>
         <Grid item xs={6}>
@@ -68,7 +76,7 @@ export default function App() {
         <Grid item xs={6}>
           <LabeledControl
             control={<Typography>{formatHeatingStart(heaterState.heatingStart)}</Typography>}
-            label="Heating start time"
+            label="Start"
           />
         </Grid>
       </Grid>
@@ -100,7 +108,7 @@ function loadHeaterState(setHeaterState: (s: HeaterState) => void) {
 function saveHeaterState(stateToSave: HeaterState, setHeaterState: (s: HeaterState) => void) {
   fetch('/heater', {
     method: 'POST',
-    body: JSON.stringify(stateToSave),
+    body: JSON.stringify(heaterStateToJSON(stateToSave)),
     headers: { 'Content-Type': 'application/json' },
   })
     .then(res => handleStateResponse(res, setHeaterState))
@@ -110,6 +118,13 @@ function handleStateResponse(res: Response, setHeaterState: (s: HeaterState) => 
   res.json()
     .then(heaterStateFromJSON)
     .then(setHeaterState)
+}
+
+function heaterStateToJSON(state: HeaterState) {
+  return {
+    readyTime: state.readyTime,
+    timerEnabled: state.timerEnabled
+  }
 }
 
 function heaterStateFromJSON(jsonState: any): HeaterState {

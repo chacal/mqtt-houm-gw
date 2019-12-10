@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { createMuiTheme, CssBaseline, ThemeProvider } from '@material-ui/core'
+import DateFnsUtils from '@date-io/date-fns'
+import { MuiPickersUtilsProvider } from '@material-ui/pickers'
 import App from './App'
 
 // Create a theme instance.
@@ -19,9 +21,11 @@ const theme = createMuiTheme({
 })
 
 ReactDOM.render(
-  <ThemeProvider theme={theme}>
-    <CssBaseline/>
-    <App/>
-  </ThemeProvider>,
+  <MuiPickersUtilsProvider utils={DateFnsUtils}>
+    <ThemeProvider theme={theme}>
+      <CssBaseline/>
+      <App/>
+    </ThemeProvider>
+  </MuiPickersUtilsProvider>,
   document.querySelector('#root'),
 )
