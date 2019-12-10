@@ -23,8 +23,8 @@ export default class HeatingDurationCalculator {
       return Duration.ofSeconds(0)
     }
 
-    // Calculate max 5 hour period before ready time
-    const calculatePeriodLength = capPeriodTo(now, end, Duration.ofHours(5))
+    // Calculate 5 hour period before ready time
+    const calculatePeriodLength = Duration.ofHours(5)
     const calculatePeriodStart = end.minusTemporalAmount(calculatePeriodLength)
 
     // Find relevant forecasts for the period before ready time and calculate avg temperature for them

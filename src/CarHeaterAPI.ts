@@ -39,7 +39,7 @@ function updateHeaterState(req: Request, res: Response) {
     heater.update(new Date(req.body.readyTime), req.body.timerEnabled)
     res.send(heater.getState())
   } else {
-    res.sendStatus(400).send({error: `Invalid heater state: ${JSON.stringify(req.body)}`})
+    res.sendStatus(400).send({ error: `Invalid heater state: ${JSON.stringify(req.body)}` })
   }
 }
 

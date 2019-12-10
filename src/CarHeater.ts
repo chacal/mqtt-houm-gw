@@ -27,16 +27,11 @@ export default class CarHeater {
 
     const heatingStart = ZonedDateTime.from(nativeJs(readyTime)).minusTemporalAmount(heatingDuration)
 
-    if (heatingStart.isBefore(ZonedDateTime.now())) {
-      console.log(`Can't set start time in history!`)
-      this.cancel()
+    this.changeToState(new CarHeaterState(readyTime, convert(heatingStart).toDate(), timerEnabled))
+    if (timerEnabled) {
+      this.heaterTimer.set(heatingStart)
     } else {
-      this.changeToState(new CarHeaterState(readyTime, convert(heatingStart).toDate(), timerEnabled))
-      if (timerEnabled) {
-        this.heaterTimer.set(heatingStart)
-      } else {
-        this.cancel()
-      }
+      this.cancel()
     }
   }
 
