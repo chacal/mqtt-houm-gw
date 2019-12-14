@@ -1,25 +1,26 @@
 import express = require('express')
 import { Express } from 'express'
 import { Request, Response } from 'express-serve-static-core'
-import CarHeater from './CarHeater'
 import { turnOff, turnOn } from './houm'
 import { Lights } from './Lights'
+import CarHeaterService from './CarHeaterService'
+import CarHeaterState from './CarHeaterState'
+import { LocalTime } from 'js-joda'
 
 const PORT = 4000
 const STATE_FILE = process.env.CAR_HEATER_STATE_FILE || 'car_heater_state.json'
 const PUBLIC_DIR = process.env.CAR_HEATER_PUBLIC_DIR || './public'
 
-interface StateUpdate {
-  timerEnabled: boolean,
-  readyTime: string
-}
 
-const heater = new CarHeater(STATE_FILE, enableHeater, disableHeater)
+const heater = new CarHeaterService(STATE_FILE, enableHeater, disableHeater)
 
 export default function setupCarHeaterAPI() {
   const app = express()
   setupRoutes(app)
-  app.listen(PORT, () => console.log(`CarHeaterAPI listening on port ${PORT}`))
+  heater.start()
+    .then(() =>
+      app.listen(PORT, () => console.log(`CarHeaterAPI listening on port ${PORT}`))
+    )
 }
 
 function setupRoutes(app: Express) {
@@ -35,11 +36,11 @@ function getHeaterState(req: Request, res: Response) {
 }
 
 function updateHeaterState(req: Request, res: Response) {
-  if (validateStateUpdate(req.body)) {
-    heater.update(new Date(req.body.readyTime), req.body.timerEnabled)
+  if (CarHeaterState.validateSerializedStateObject(req.body)) {
+    heater.update(LocalTime.parse(req.body.readyTime), req.body.timerEnabled)
     res.send(heater.getState())
   } else {
-    res.sendStatus(400).send({ error: `Invalid heater state: ${JSON.stringify(req.body)}` })
+    res.status(400).send({ error: `Invalid heater state: ${JSON.stringify(req.body)}` })
   }
 }
 
@@ -53,7 +54,3 @@ function disableHeater() {
   turnOff(Lights.Outside.Frontyard.Car)
 }
 
-function validateStateUpdate(obj: any): obj is StateUpdate {
-  return obj.readyTime !== undefined && typeof obj.readyTime === 'string' && !isNaN(Date.parse(obj.readyTime)) &&
-    obj.timerEnabled !== undefined && typeof obj.timerEnabled == 'boolean'
-}

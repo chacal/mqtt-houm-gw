@@ -1,9 +1,14 @@
 import { readFileSync, writeFileSync } from 'fs'
+import { LocalTime } from 'js-joda'
+
+export interface SearializedCarHeaterState2 {
+  timerEnabled: boolean,
+  readyTime: string
+}
 
 export default class CarHeaterState {
-  constructor(readonly readyTime: Date = new Date(),
-              readonly heatingStart: Date = new Date(),
-              readonly timerEnabled: boolean = false) {
+  constructor(readonly readyTime = LocalTime.parse('12:00'),
+              readonly timerEnabled = false) {
   }
 
   static load(stateFile: string): CarHeaterState {
@@ -11,11 +16,11 @@ export default class CarHeaterState {
 
     try {
       const obj = JSON.parse(readFileSync(stateFile, 'utf8'))
-      if (CarHeaterState.validateSavedStateObject(obj)) {
-        ret = new CarHeaterState(new Date(obj.readyTime), new Date(obj.heatingStart), obj.timerEnabled)
+      if (CarHeaterState.validateSerializedStateObject(obj)) {
+        ret = new CarHeaterState(LocalTime.parse(obj.readyTime), obj.timerEnabled)
       }
     } catch (e) {
-      console.log(`Unable to load state from ${stateFile}`, e)
+      console.log(`Unable to load state from ${stateFile}, using defaults.`, e)
     }
 
     return ret
@@ -25,12 +30,17 @@ export default class CarHeaterState {
     writeFileSync(stateFile, JSON.stringify(state))
   }
 
-  private static validateSavedStateObject(obj: any) {
-    return isDateStr(obj.readyTime) && isDateStr(obj.heatingStart) &&
-      obj.timerEnabled !== undefined && typeof obj.timerEnabled == 'boolean'
+  static validateSerializedStateObject(obj: any): obj is SearializedCarHeaterState2 {
+    try {
+      LocalTime.parse(obj.readyTime)
+      return isTimeStr(obj.readyTime) && obj.timerEnabled !== undefined && typeof obj.timerEnabled == 'boolean'
+    } catch (e) {
+      return false
+    }
 
-    function isDateStr(val: any) {
-      return val !== undefined && typeof val === 'string' && !isNaN(Date.parse(val))
+    function isTimeStr(val: any) {
+      return val !== undefined && typeof val === 'string' && val.match(/[0-2]\d:[0-5]\d/) !== null
     }
   }
 }
+

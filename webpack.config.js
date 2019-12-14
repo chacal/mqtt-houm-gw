@@ -5,7 +5,7 @@ module.exports = {
   entry: './src/public/main.tsx',
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'built/public'),
+    path: path.resolve(__dirname, 'built/src/public'),
   },
   module: {
     rules: [

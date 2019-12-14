@@ -19,7 +19,7 @@ WORKDIR /opt/app
 COPY package.json package-lock.json ./
 RUN npm install
 
-COPY --from=builder /opt/app/built .
+COPY --from=builder /opt/app/built/src .
 
 CMD ["node", "./index.js"]
 

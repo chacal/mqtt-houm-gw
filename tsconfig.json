@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "outDir": "./built",
-    "allowJs": true,
     "target": "es6",
     "module": "commonjs",
     "sourceMap": true,
@@ -11,12 +10,5 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strictNullChecks": true
-  },
-  "include": [
-    "./src/**/*.ts",
-    "./src/**/*.tsx"
-  ],
-  "exclude": [
-    "./src/public/*"
-  ]
+  }
 }
