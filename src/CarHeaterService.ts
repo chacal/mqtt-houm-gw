@@ -4,6 +4,7 @@ import CarHeaterState from './CarHeaterState'
 import { Duration, LocalTime } from 'js-joda'
 import { CronJob, CronTime } from 'cron'
 import calculateHeatingDuration from './HeatingDurationCalculator'
+import { isHeating } from './HeatingInstantCalculations'
 
 export default class CarHeaterService {
   state: CarHeaterState
@@ -31,15 +32,18 @@ export default class CarHeaterService {
     const startTime = readyTime.minus(this.heatingDuration)
     this.startCron.setTime(new CronTime(toDailyCronStr(startTime), 'UTC'))
     this.endCron.setTime(new CronTime(toDailyCronStr(readyTime), 'UTC'))
-    this.heaterStopAction() // TODO: Async
 
     if (timerEnabled) {
       this.startCron.start()
       this.endCron.start()
-      if (this.endCron.nextDate().isBefore(this.startCron.nextDate())) {
-        this.enableHeater() // TODO: Async
-      }
     }
+
+    if (timerEnabled && this.endCron.nextDate().isBefore(this.startCron.nextDate())) {
+      this.enableHeater()
+    } else {
+      this.heaterStopAction()
+    }
+
     console.log(`New state: ${JSON.stringify(this.state)}, heating duration: ${this.heatingDuration}, start time: ${startTime.toString()}`)
   }
 
