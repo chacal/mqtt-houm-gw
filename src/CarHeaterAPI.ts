@@ -5,7 +5,6 @@ import { turnOff, turnOn } from './houm'
 import { Lights } from './Lights'
 import CarHeaterService from './CarHeaterService'
 import CarHeaterState from './CarHeaterState'
-import { LocalTime } from 'js-joda'
 
 const PORT = 4000
 const STATE_FILE = process.env.CAR_HEATER_STATE_FILE || 'car_heater_state.json'
@@ -37,7 +36,7 @@ function getHeaterState(req: Request, res: Response) {
 
 function updateHeaterState(req: Request, res: Response) {
   if (CarHeaterState.validateSerializedStateObject(req.body)) {
-    heater.update(LocalTime.parse(req.body.readyTime), req.body.timerEnabled)
+    heater.update(req.body.readyTime, req.body.timerEnabled)
     res.send(heater.getState())
   } else {
     res.status(400).send({ error: `Invalid heater state: ${JSON.stringify(req.body)}` })

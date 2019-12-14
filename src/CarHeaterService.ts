@@ -1,17 +1,16 @@
 import { getAllCityForecastItemsWithInterval, HourlyForecast } from './CityForecasts'
 import { noop } from 'lodash'
 import CarHeaterState from './CarHeaterState'
-import { Duration, LocalTime } from 'js-joda'
 import { CronJob, CronTime } from 'cron'
-import calculateHeatingDuration from './HeatingDurationCalculator'
-import { isHeating } from './HeatingInstantCalculations'
+import calculateHeatingMinutes from './HeatingDurationCalculator'
+import { isHeating, nextHeatingStartInstant, nextReadyInstant } from './HeatingInstantCalculations'
 
 export default class CarHeaterService {
   state: CarHeaterState
   forecasts: HourlyForecast[] = []
   startCron: CronJob
   endCron: CronJob
-  heatingDuration: Duration
+  heatingDuration: number
 
   constructor(readonly stateFile: string, readonly heaterStartAction: () => void, readonly heaterStopAction: () => void) {
     this.startCron = new CronJob('', this.enableHeater.bind(this), noop, false, 'UTC')
@@ -23,36 +22,37 @@ export default class CarHeaterService {
     return this.startLoadingForecasts()
   }
 
-  update(readyTime: LocalTime, timerEnabled: boolean) {
+  update(readyTime: string, timerEnabled: boolean) {
     this.state = new CarHeaterState(readyTime, timerEnabled)
     CarHeaterState.save(this.stateFile, this.state)
 
-    this.heatingDuration = calculateHeatingDuration(readyTime, this.forecasts)
+    this.heatingDuration = calculateHeatingMinutes(readyTime, this.forecasts)
+    const startInstant = nextHeatingStartInstant(readyTime, this.heatingDuration)
+    const readyInstant = nextReadyInstant(readyTime)
 
-    const startTime = readyTime.minus(this.heatingDuration)
-    this.startCron.setTime(new CronTime(toDailyCronStr(startTime), 'UTC'))
-    this.endCron.setTime(new CronTime(toDailyCronStr(readyTime), 'UTC'))
+    this.startCron.setTime(new CronTime(toDailyCronStr(startInstant), 'UTC'))
+    this.endCron.setTime(new CronTime(toDailyCronStr(readyInstant), 'UTC'))
 
     if (timerEnabled) {
       this.startCron.start()
       this.endCron.start()
     }
 
-    if (timerEnabled && this.endCron.nextDate().isBefore(this.startCron.nextDate())) {
+    if (timerEnabled && isHeating(readyTime, this.heatingDuration)) {
       this.enableHeater()
     } else {
       this.heaterStopAction()
     }
 
-    console.log(`New state: ${JSON.stringify(this.state)}, heating duration: ${this.heatingDuration}, start time: ${startTime.toString()}`)
+    console.log(`New state: ${JSON.stringify(this.state)}, heating duration: ${this.heatingDuration}, start time: ${startInstant.toISOString()}`)
   }
 
   getState() {
-    return { ...this.state, heatingDuration: this.heatingDuration.toMinutes() }
+    return { ...this.state, heatingDuration: this.heatingDuration }
   }
 
   private enableHeater() {
-    if (!this.heatingDuration.isZero()) {
+    if (this.heatingDuration !== 0) {
       this.heaterStartAction()
     } else {
       console.log('Heating duration is 0. Not starting heater.')
@@ -69,6 +69,6 @@ export default class CarHeaterService {
   }
 }
 
-function toDailyCronStr(time: LocalTime) {
-  return `0 ${time.minute()} ${time.hour()} * * *`
+function toDailyCronStr(time: Date) {
+  return `0 ${time.getUTCMinutes()} ${time.getUTCHours()} * * *`
 }
