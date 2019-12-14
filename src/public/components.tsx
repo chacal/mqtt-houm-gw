@@ -1,5 +1,5 @@
 import React from 'react'
-import { FormControlLabel, makeStyles } from '@material-ui/core'
+import { Chip, FormControlLabel, makeStyles, Typography } from '@material-ui/core'
 
 const labelStyles = makeStyles(theme => ({
   leftAlignedLabel: {
@@ -28,4 +28,17 @@ export function LabeledControl(props: LabeledControlProps) {
     className={props.center ? '' : classes.leftAlignedLabel}
     classes={{ label: classes.label }}
   />
+}
+
+
+interface OnOffStateProps {
+  onOffState: boolean | undefined
+}
+
+export function OnOffState(props: OnOffStateProps) {
+  const str = props.onOffState === undefined ? '-' : (props.onOffState ? 'ON' : 'OFF')
+  const color = str === 'ON' ? 'secondary' : 'default'
+  return (
+    <Chip label={str} color={color}/>
+  )
 }

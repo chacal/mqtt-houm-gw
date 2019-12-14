@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { CircularProgress, Container, Grid, makeStyles, Typography } from '@material-ui/core'
 import HeaterPanel from './HeaterPanel'
+import io from 'socket.io-client'
+import { OnOffState } from './components'
+
+const socket = io()
 
 const appStyles = makeStyles(theme => ({
   root: {
@@ -20,15 +24,25 @@ export interface HeaterState {
 export default function App() {
   const classes = appStyles()
   const [heaterSate, setHeaterState] = useState<HeaterState>()
+  const [heaterOnOffSate, setHeaterOnOffState] = useState<boolean | undefined>()
 
   useEffect(() => {
     loadHeaterState()
       .then(setHeaterState)
+
+    socket.on('heaterState', (onOffState: boolean) => setHeaterOnOffState(onOffState))
   }, [])
 
   return (
     <Container maxWidth='xs' className={classes.root}>
-      <Typography variant="h5" className={classes.h5}>Car heater timer</Typography>
+      <Grid container>
+        <Grid item xs={8}>
+          <Typography variant="h5" className={classes.h5}>Car heater timer</Typography>
+        </Grid>
+        <Grid item xs={4}>
+          <OnOffState onOffState={heaterOnOffSate}/>
+        </Grid>
+      </Grid>
       {!heaterSate ? <LoadingIndicator/> : <HeaterPanel state={heaterSate} onHeaterStateChange={saveHeaterState}/>}
     </Container>
   )
