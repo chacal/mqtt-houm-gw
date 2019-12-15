@@ -1,7 +1,7 @@
-import React from 'react'
-import { Chip, CircularProgress, FormControlLabel, Grid, makeStyles } from '@material-ui/core'
+import React, { Fragment } from 'react'
+import { CircularProgress, Divider, FormControlLabel, Grid, makeStyles, Typography } from '@material-ui/core'
 
-const labelStyles = makeStyles(theme => ({
+const componentStyles = makeStyles(theme => ({
   leftAlignedLabel: {
     alignItems: 'start',
   },
@@ -9,6 +9,12 @@ const labelStyles = makeStyles(theme => ({
     fontSize: '13px',
     color: '#838383',
     marginBottom: '1px'
+  },
+  subHeaderText: {
+    marginTop: theme.spacing(4)
+  },
+  subHeaderDivider: {
+    marginBottom: theme.spacing(2)
   }
 }))
 
@@ -19,7 +25,7 @@ interface LabeledControlProps {
 }
 
 export function LabeledControl(props: LabeledControlProps) {
-  const classes = labelStyles()
+  const classes = componentStyles()
 
   return <FormControlLabel
     control={props.control}
@@ -28,19 +34,6 @@ export function LabeledControl(props: LabeledControlProps) {
     className={props.center ? '' : classes.leftAlignedLabel}
     classes={{ label: classes.label }}
   />
-}
-
-
-interface OnOffStateProps {
-  onOffState: boolean | undefined
-}
-
-export function OnOffState(props: OnOffStateProps) {
-  const str = props.onOffState === undefined ? '-' : (props.onOffState ? 'ON' : 'OFF')
-  const color = str === 'ON' ? 'secondary' : 'default'
-  return (
-    <Chip label={str} color={color}/>
-  )
 }
 
 
@@ -53,3 +46,20 @@ export function LoadingIndicator() {
     </Grid>
   )
 }
+
+
+interface SubHeaderProps {
+  headerText: string
+}
+
+export function SubHeader(props: SubHeaderProps) {
+  const classes = componentStyles()
+
+  return (
+    <Fragment>
+      <Typography className={classes.subHeaderText} variant="body1">{props.headerText}</Typography>
+      <Divider className={classes.subHeaderDivider}/>
+    </Fragment>
+  )
+}
+

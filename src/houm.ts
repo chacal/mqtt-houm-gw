@@ -4,7 +4,7 @@ import io from 'socket.io-client'
 
 const HOUM_SITE_KEY = process.env.HOUM_SITE_KEY
 const HOUM_BASE_URL = `https://api.mountkelvin.com`
-const HOUM_SITE_URL = `${HOUM_BASE_URL}/${HOUM_SITE_KEY}`
+const HOUM_SITE_URL = `${HOUM_BASE_URL}/api/site/${HOUM_SITE_KEY}`
 const HOUM_APPLY_DEVICE_URL = HOUM_SITE_URL + '/applyDevice'
 const HOUM_APPLY_SCENE_URL = HOUM_SITE_URL + '/applyScene'
 
@@ -72,6 +72,6 @@ function postJson(url: string, json: {}) {
     body: JSON.stringify(json),
     headers: { 'Content-Type': 'application/json' },
   })
-    .then(() => console.log(`Done in ${new Date().getTime() - start.getTime()}ms.`))
+    .then(res => console.log(`Done in ${new Date().getTime() - start.getTime()}ms. Response: ${res.status}`))
     .catch(e => console.error('Error while POSTing:', e))
 }

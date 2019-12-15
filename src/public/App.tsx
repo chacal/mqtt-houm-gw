@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Grid, makeStyles, Typography } from '@material-ui/core'
+import { Container, makeStyles, Typography } from '@material-ui/core'
 import TimerPanel from './TimerPanel'
 import io from 'socket.io-client'
-import { LoadingIndicator, OnOffState } from './components'
+import { LoadingIndicator, SubHeader } from './components'
+import { HeaterPanel } from './HeaterPanel'
 
 const socket = io()
 
@@ -21,28 +22,39 @@ export interface TimerState {
   heatingDuration: number
 }
 
+export enum HeaterState {
+  On,
+  Off,
+  Unknown
+}
+
 export default function App() {
   const classes = appStyles()
   const [timerState, setTimerState] = useState<TimerState>()
-  const [heaterOnOffSate, setHeaterOnOffState] = useState<boolean | undefined>()
+  const [heaterSate, setHeaterState] = useState(HeaterState.Unknown)
 
   useEffect(() => {
     loadTimerState()
       .then(setTimerState)
 
-    socket.on('heaterState', (onOffState: boolean) => setHeaterOnOffState(onOffState))
+    socket.on('heaterState', (state: boolean) =>
+      setHeaterState(state ? HeaterState.On : HeaterState.Off)
+    )
   }, [])
+
+  function applyHeaterState(newState: HeaterState) {
+    setHeaterState(newState)
+    saveHeaterState(newState)
+  }
 
   return (
     <Container maxWidth='xs' className={classes.root}>
-      <Grid container>
-        <Grid item xs={8}>
-          <Typography variant="h5" className={classes.h5}>Car heater timer</Typography>
-        </Grid>
-        <Grid item xs={4}>
-          <OnOffState onOffState={heaterOnOffSate}/>
-        </Grid>
-      </Grid>
+      <Typography variant="h5" className={classes.h5}>Car heater</Typography>
+
+      <SubHeader headerText={'Heater'}/>
+      <HeaterPanel onHeaterStateChanged={applyHeaterState} heaterState={heaterSate}/>
+
+      <SubHeader headerText={'Timer'}/>
       {!timerState ? <LoadingIndicator/> : <TimerPanel state={timerState} onTimerStateChange={saveTimerState}/>}
     </Container>
   )
@@ -50,17 +62,25 @@ export default function App() {
 
 
 function loadTimerState() {
-  return fetch(`/heater`)
+  return fetch(`/timer`)
     .then(res => res.json())
 }
 
 function saveTimerState(stateToSave: TimerState) {
-  return fetch('/heater', {
+  return postJSON('/timer', timerStateToJSON(stateToSave))
+    .then(res => res.json())
+}
+
+function saveHeaterState(state: HeaterState) {
+  postJSON('/heater', { state: state === HeaterState.On })
+}
+
+function postJSON(url: string, data: any) {
+  return fetch(url, {
     method: 'POST',
-    body: JSON.stringify(timerStateToJSON(stateToSave)),
+    body: JSON.stringify(data),
     headers: { 'Content-Type': 'application/json' },
   })
-    .then(res => res.json())
 }
 
 function timerStateToJSON(state: TimerState) {

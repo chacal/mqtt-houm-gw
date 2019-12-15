@@ -34,8 +34,9 @@ function setupRoutes(app: Express) {
   console.log('Using public dir:', PUBLIC_DIR)
   app.use(express.static(PUBLIC_DIR))
   app.use(express.json())
-  app.get('/heater', getTimerState)
-  app.post('/heater', updateTimerState)
+  app.get('/timer', getTimerState)
+  app.post('/timer', updateTimerState)
+  app.post('/heater', updateHeaterState)
 }
 
 function setupSocketIO(ioServer: Server) {
@@ -68,6 +69,16 @@ function updateTimerState(req: Request, res: Response) {
     res.send(heater.getState())
   } else {
     res.status(400).send({ error: `Invalid timer state: ${JSON.stringify(req.body)}` })
+  }
+}
+
+function updateHeaterState(req: Request, res: Response) {
+  if (req.body.state !== undefined && typeof req.body.state === 'boolean') {
+    console.log('Setting heater state manually.')
+    req.body.state ? enableHeater() : disableHeater()
+    res.sendStatus(204)
+  } else {
+    res.status(400).send({ error: `Invalid heater state: ${JSON.stringify(req.body)}` })
   }
 }
 
