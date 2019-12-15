@@ -10,7 +10,7 @@ import { Grid, Switch, Typography } from '@material-ui/core'
 import { LabeledControl } from './components'
 import { TimePicker } from '@material-ui/pickers'
 import { TimerState } from './App'
-import { formatDistance, formatDistanceStrict, subMinutes } from 'date-fns'
+import { differenceInMinutes, formatDistance, formatDistanceStrict, subMinutes } from 'date-fns'
 import enGB from 'date-fns/locale/en-GB'
 
 interface TimerPanelProps {
@@ -83,7 +83,7 @@ function TimerState(timerState: TimerState) {
 
 export function formatState(state: TimerState, now: Date = new Date()) {
   if (state.timerEnabled) {
-    const duration = formatHeatingTime(state.heatingDuration)
+    const duration = formatTotalHeatingTime(state.heatingDuration)
 
     if (isHeating(state.readyTime, state.heatingDuration, now)) {
       return `Heating, ${formatHeatingLeft(state, now)} left. Total ${duration}.`
@@ -97,7 +97,13 @@ export function formatState(state: TimerState, now: Date = new Date()) {
 }
 
 function formatHeatingLeft(state: TimerState, now: Date) {
-  return formatDistanceStrict(nextReadyInstant(state.readyTime, now), now, { unit: 'minute' })
+  const ready = nextReadyInstant(state.readyTime, now)
+  const minutesLeft = differenceInMinutes(ready, now)
+  if (minutesLeft >= 59) {
+    return formatDistanceStrict(ready, now, { unit: 'minute' })
+  } else {
+    return formatDistanceStrict(ready, now)
+  }
 }
 
 function formatWaitLeft(state: TimerState, now: Date) {
@@ -107,7 +113,7 @@ function formatWaitLeft(state: TimerState, now: Date) {
   })
 }
 
-function formatHeatingTime(heatingDuration: number) {
+function formatTotalHeatingTime(heatingDuration: number) {
   const now = new Date()
   return formatDistanceStrict(subMinutes(now, heatingDuration), now, { unit: 'minute' })
 }
