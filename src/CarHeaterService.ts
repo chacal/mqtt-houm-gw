@@ -40,8 +40,6 @@ export default class CarHeaterService {
 
     if (timerEnabled && isHeating(readyTime, this.heatingDuration)) {
       this.enableHeater()
-    } else {
-      this.heaterStopAction()
     }
 
     console.log(`New state: ${JSON.stringify(this.state)}, heating duration: ${this.heatingDuration}, start time: ${startInstant.toISOString()}`)
