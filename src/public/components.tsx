@@ -1,5 +1,5 @@
 import React from 'react'
-import { Chip, FormControlLabel, makeStyles, Typography } from '@material-ui/core'
+import { Chip, CircularProgress, FormControlLabel, Grid, makeStyles, Typography } from '@material-ui/core'
 
 const labelStyles = makeStyles(theme => ({
   leftAlignedLabel: {
@@ -40,5 +40,16 @@ export function OnOffState(props: OnOffStateProps) {
   const color = str === 'ON' ? 'secondary' : 'default'
   return (
     <Chip label={str} color={color}/>
+  )
+}
+
+
+export function LoadingIndicator() {
+  return (
+    <Grid container justify='center' alignItems='center' style={{ height: '170px' }}>
+      <Grid item xs={4}>
+        <CircularProgress/>
+      </Grid>
+    </Grid>
   )
 }

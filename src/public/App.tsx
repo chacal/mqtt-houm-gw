@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { CircularProgress, Container, Grid, makeStyles, Typography } from '@material-ui/core'
+import { Container, Grid, makeStyles, Typography } from '@material-ui/core'
 import HeaterPanel from './HeaterPanel'
 import io from 'socket.io-client'
-import { OnOffState } from './components'
+import { LoadingIndicator, OnOffState } from './components'
 
 const socket = io()
 
@@ -45,16 +45,6 @@ export default function App() {
       </Grid>
       {!heaterSate ? <LoadingIndicator/> : <HeaterPanel state={heaterSate} onHeaterStateChange={saveHeaterState}/>}
     </Container>
-  )
-}
-
-function LoadingIndicator() {
-  return (
-    <Grid container justify='center' alignItems='center' style={{ height: '170px' }}>
-      <Grid item xs={4}>
-        <CircularProgress/>
-      </Grid>
-    </Grid>
   )
 }
 
