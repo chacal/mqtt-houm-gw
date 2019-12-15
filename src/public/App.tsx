@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Container, Grid, makeStyles, Typography } from '@material-ui/core'
-import HeaterPanel from './HeaterPanel'
+import TimerPanel from './TimerPanel'
 import io from 'socket.io-client'
 import { LoadingIndicator, OnOffState } from './components'
 
@@ -15,7 +15,7 @@ const appStyles = makeStyles(theme => ({
   }
 }))
 
-export interface HeaterState {
+export interface TimerState {
   timerEnabled: boolean
   readyTime: string,
   heatingDuration: number
@@ -23,12 +23,12 @@ export interface HeaterState {
 
 export default function App() {
   const classes = appStyles()
-  const [heaterSate, setHeaterState] = useState<HeaterState>()
+  const [timerState, setTimerState] = useState<TimerState>()
   const [heaterOnOffSate, setHeaterOnOffState] = useState<boolean | undefined>()
 
   useEffect(() => {
-    loadHeaterState()
-      .then(setHeaterState)
+    loadTimerState()
+      .then(setTimerState)
 
     socket.on('heaterState', (onOffState: boolean) => setHeaterOnOffState(onOffState))
   }, [])
@@ -43,31 +43,27 @@ export default function App() {
           <OnOffState onOffState={heaterOnOffSate}/>
         </Grid>
       </Grid>
-      {!heaterSate ? <LoadingIndicator/> : <HeaterPanel state={heaterSate} onHeaterStateChange={saveHeaterState}/>}
+      {!timerState ? <LoadingIndicator/> : <TimerPanel state={timerState} onTimerStateChange={saveTimerState}/>}
     </Container>
   )
 }
 
 
-function loadHeaterState() {
+function loadTimerState() {
   return fetch(`/heater`)
-    .then(res => handleStateResponse(res))
+    .then(res => res.json())
 }
 
-function saveHeaterState(stateToSave: HeaterState) {
+function saveTimerState(stateToSave: TimerState) {
   return fetch('/heater', {
     method: 'POST',
-    body: JSON.stringify(heaterStateToJSON(stateToSave)),
+    body: JSON.stringify(timerStateToJSON(stateToSave)),
     headers: { 'Content-Type': 'application/json' },
   })
-    .then(res => handleStateResponse(res))
+    .then(res => res.json())
 }
 
-function handleStateResponse(res: Response) {
-  return res.json()
-}
-
-function heaterStateToJSON(state: HeaterState) {
+function timerStateToJSON(state: TimerState) {
   return {
     readyTime: state.readyTime,
     timerEnabled: state.timerEnabled

@@ -9,37 +9,37 @@ import {
 import { Grid, Switch, Typography } from '@material-ui/core'
 import { LabeledControl } from './components'
 import { TimePicker } from '@material-ui/pickers'
-import { HeaterState } from './App'
+import { TimerState } from './App'
 import { formatDistance, formatDistanceStrict, subMinutes } from 'date-fns'
 import enGB from 'date-fns/locale/en-GB'
 
-interface HeaterPanelProps {
-  state: HeaterState,
-  onHeaterStateChange: (newState: HeaterState) => Promise<HeaterState>
+interface TimerPanelProps {
+  state: TimerState,
+  onTimerStateChange: (newState: TimerState) => Promise<TimerState>
 }
 
-export default function HeaterPanel(props: HeaterPanelProps) {
-  const [heaterState, setHeaterState] = useState(props.state)
+export default function TimerPanel(props: TimerPanelProps) {
+  const [timerState, setTimerState] = useState(props.state)
 
   function readyTimeChanged(selectedTime: Date) {
-    updateAndSaveState({ ...heaterState, readyTime: toUtcHHmm(selectedTime) })
+    updateAndSaveState({ ...timerState, readyTime: toUtcHHmm(selectedTime) })
   }
 
   function timerEnabledChanged(e: ChangeEvent<HTMLInputElement>) {
-    updateAndSaveState({ ...heaterState, timerEnabled: e.target.checked })
+    updateAndSaveState({ ...timerState, timerEnabled: e.target.checked })
   }
 
-  function updateAndSaveState(state: HeaterState) {
-    setHeaterState(state)
-    props.onHeaterStateChange(state)
-      .then(setHeaterState)
+  function updateAndSaveState(state: TimerState) {
+    setTimerState(state)
+    props.onTimerStateChange(state)
+      .then(setTimerState)
   }
 
   return (
     <Grid container spacing={2}>
       <Grid item xs={6}>
         <LabeledControl
-          control={<TimePicker value={timeToday(heaterState.readyTime)} onChange={readyTimeChanged}
+          control={<TimePicker value={timeToday(timerState.readyTime)} onChange={readyTimeChanged}
                                ampm={false} minutesStep={5} style={{ width: '80px' }}/>}
           label="Ready"
         />
@@ -50,7 +50,7 @@ export default function HeaterPanel(props: HeaterPanelProps) {
             <Grid component="label" container alignItems="center" spacing={0}>
               <Grid item>Off</Grid>
               <Grid item>
-                <Switch checked={heaterState.timerEnabled} onChange={timerEnabledChanged}/>
+                <Switch checked={timerState.timerEnabled} onChange={timerEnabledChanged}/>
               </Grid>
               <Grid item>On</Grid>
             </Grid>
@@ -59,11 +59,11 @@ export default function HeaterPanel(props: HeaterPanelProps) {
         />
       </Grid>
       <Grid item xs={6}>
-        <HeaterState {...heaterState}/>
+        <TimerState {...timerState}/>
       </Grid>
       <Grid item xs={6}>
         <LabeledControl
-          control={<Typography>{formatHeatingTime(heaterState.heatingDuration)}</Typography>}
+          control={<Typography>{formatHeatingTime(timerState.heatingDuration)}</Typography>}
           label="Heating"
         />
       </Grid>
@@ -71,7 +71,7 @@ export default function HeaterPanel(props: HeaterPanelProps) {
   )
 }
 
-function HeaterState(heaterState: HeaterState) {
+function TimerState(timerState: TimerState) {
   const [, setState] = useState<any>()
 
   // Force re-render every second to update the remaining time
@@ -81,12 +81,12 @@ function HeaterState(heaterState: HeaterState) {
   }, [])
 
   return (<LabeledControl
-    control={<Typography>{formatTimeUntilNextAction(heaterState)}</Typography>}
-    label={formatHeatingState(heaterState)}
+    control={<Typography>{formatTimeUntilNextAction(timerState)}</Typography>}
+    label={formatTimerState(timerState)}
   />)
 }
 
-export function formatTimeUntilNextAction(state: HeaterState, now: Date = new Date()) {
+export function formatTimeUntilNextAction(state: TimerState, now: Date = new Date()) {
   if (isHeating(state.readyTime, state.heatingDuration, now)) {
     return 'in ' + formatDistanceStrict(nextReadyInstant(state.readyTime, now), now, { unit: 'minute' })
   } else {
@@ -97,7 +97,7 @@ export function formatTimeUntilNextAction(state: HeaterState, now: Date = new Da
   }
 }
 
-export function formatHeatingState(state: HeaterState, now: Date = new Date()) {
+export function formatTimerState(state: TimerState, now: Date = new Date()) {
   return isHeating(state.readyTime, state.heatingDuration, now) ? 'Ending' : 'Starting'
 }
 

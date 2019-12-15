@@ -1,5 +1,5 @@
 import React from 'react'
-import { Chip, CircularProgress, FormControlLabel, Grid, makeStyles, Typography } from '@material-ui/core'
+import { Chip, CircularProgress, FormControlLabel, Grid, makeStyles } from '@material-ui/core'
 
 const labelStyles = makeStyles(theme => ({
   leftAlignedLabel: {
