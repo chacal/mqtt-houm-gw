@@ -41,7 +41,7 @@ export default function TimerPanel(props: TimerPanelProps) {
         <LabeledControl
           control={<TimePicker value={timeToday(timerState.readyTime)} onChange={readyTimeChanged}
                                ampm={false} minutesStep={5} style={{ width: '80px' }}/>}
-          label="Ready"
+          label="Ready time"
         />
       </Grid>
       <Grid item xs={6}>
@@ -55,17 +55,11 @@ export default function TimerPanel(props: TimerPanelProps) {
               <Grid item>On</Grid>
             </Grid>
           }
-          label="Timer state"
+          label="State"
         />
       </Grid>
-      <Grid item xs={6}>
+      <Grid item>
         <TimerState {...timerState}/>
-      </Grid>
-      <Grid item xs={6}>
-        <LabeledControl
-          control={<Typography>{formatHeatingTime(timerState.heatingDuration)}</Typography>}
-          label="Heating"
-        />
       </Grid>
     </Grid>
   )
@@ -81,24 +75,36 @@ function TimerState(timerState: TimerState) {
   }, [])
 
   return (<LabeledControl
-    control={<Typography>{formatTimeUntilNextAction(timerState)}</Typography>}
-    label={formatTimerState(timerState)}
+    control={<Typography variant={'body2'}>{formatState(timerState)}</Typography>}
+    label={'Status'}
   />)
 }
 
-export function formatTimeUntilNextAction(state: TimerState, now: Date = new Date()) {
-  if (isHeating(state.readyTime, state.heatingDuration, now)) {
-    return 'in ' + formatDistanceStrict(nextReadyInstant(state.readyTime, now), now, { unit: 'minute' })
+
+export function formatState(state: TimerState, now: Date = new Date()) {
+  if (state.timerEnabled) {
+    const duration = formatHeatingTime(state.heatingDuration)
+
+    if (isHeating(state.readyTime, state.heatingDuration, now)) {
+      return `Heating, ${formatHeatingLeft(state, now)} left. Total ${duration}.`
+    } else {
+      return `Waiting, ${formatWaitLeft(state, now)} left. Will heat for ${duration}.`
+    }
+
   } else {
-    return 'in ' + formatDistance(nextHeatingStartInstant(state.readyTime, state.heatingDuration, now), now, {
-      locale: enGB,
-      includeSeconds: true
-    })
+    return 'Disabled'
   }
 }
 
-export function formatTimerState(state: TimerState, now: Date = new Date()) {
-  return isHeating(state.readyTime, state.heatingDuration, now) ? 'Ending' : 'Starting'
+function formatHeatingLeft(state: TimerState, now: Date) {
+  return formatDistanceStrict(nextReadyInstant(state.readyTime, now), now, { unit: 'minute' })
+}
+
+function formatWaitLeft(state: TimerState, now: Date) {
+  return formatDistance(nextHeatingStartInstant(state.readyTime, state.heatingDuration, now), now, {
+    locale: enGB,
+    includeSeconds: true
+  })
 }
 
 function formatHeatingTime(heatingDuration: number) {
