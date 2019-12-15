@@ -6,6 +6,8 @@ import ISensorEvent = SensorEvents.ISensorEvent
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import setupImpulseListener from './ImpulseListener'
+import setupCarHeaterAPI from './CarHeaterAPI'
+import { connectHoumWs } from './houm'
 
 export type TempEventStream = EventStream<ITemperatureEvent>
 
@@ -20,6 +22,7 @@ main()
 function main() {
   const mqttClient = Mqtt.startMqttClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
   mqttClient.subscribe('/sensor/+/+/state')
+  connectHoumWs()
 
   const sensorEvents = Mqtt.messageStreamFrom(mqttClient)
     .map(msg => JSON.parse(msg.toString()) as ISensorEvent)
@@ -31,6 +34,7 @@ function main() {
   setupStorage(sensorEvents)
   setupD101(outsideTempEvents, publishThreadDisplayStatus)
   setupImpulseListener(mqttClient)
+  setupCarHeaterAPI()
 
   function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
     mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))

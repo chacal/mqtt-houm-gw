@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
     "outDir": "./built",
-    "allowJs": true,
     "target": "es6",
     "module": "commonjs",
-    "sourceMap": true
-  },
-  "include": [
-    "./src/**/*"
-  ]
+    "sourceMap": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "lib": ["es6", "dom"],
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictNullChecks": true
+  }
 }

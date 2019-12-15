@@ -15,5 +15,10 @@ export const Lights = {
     Storage: {
       Ceiling: '8deb9610-8ad8-4936-9ede-9aea45138cf2'
     }
+  },
+  Outside: {
+    Frontyard: {
+      Car: '02f343a5-f4fa-4905-8e56-c513f8ba2483'
+    }
   }
 }
