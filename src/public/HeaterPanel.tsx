@@ -49,7 +49,7 @@ export function HeaterPanel(props: HeaterPanelProps) {
 
   return (
     <Grid container justify={'center'} spacing={0}>
-      <Grid item xs={4}>
+      <Grid item xs={5}>
         <Grid component="label" container alignItems="center" spacing={0}>
           <Grid item><Typography variant="body1">Off</Typography></Grid>
           <Grid item>
