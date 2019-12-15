@@ -24,16 +24,17 @@ const D101_ADDRESS = '2001:2003:f0a2:9c9b:0a7b:c40f:550a:832f'
 const DISPLAY_WIDTH = 296
 const DISPLAY_HEIGHT = 128
 
-const TEMP_RENDERING_INTERVAL_MS = 10 * 61000
-const VCC_POLLING_INTERVAL_MS = 10 * 60000
+const TEMP_UPDATE_INTERVAL_MS = 60000
+const VCC_POLLING_INTERVAL_MS = 5 * 60000
 const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
+const RENDER_INTERVAL = 10 * 60000
 
 registerFont(resolve(__dirname, './Roboto-Bold.ttf'), { family: 'Roboto', weight: 'bold' })
 registerFont(resolve(__dirname, './OpenSans-Bold.ttf'), { family: 'Open Sans', weight: 'bold' })
 
 export default function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
   const statuses = NetworkDisplay.statusesWithInterval(D101_ADDRESS, VCC_POLLING_INTERVAL_MS)
-  const temperatures = temperaturesWithInterval(Duration.ofMillis(TEMP_RENDERING_INTERVAL_MS), tempEvents)
+  const temperatures = temperaturesWithInterval(Duration.ofMillis(TEMP_UPDATE_INTERVAL_MS), tempEvents)
   const forecasts = cityForecastsWithInterval('espoo', FORECAST_UPDATE_INTERVAL_MS)
   const combined = combineTemplate({
     tempEvent: temperatures,
@@ -44,6 +45,8 @@ export default function setupNetworkDisplay(tempEvents: TempEventStream, display
   statuses.onValue(displayStatusCb)
 
   combined
+    .first()
+    .concat(combined.sample(RENDER_INTERVAL))
     .flatMapLatest(v =>
       fromPromise(render(v.tempEvent.temperature, v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.forecasts))
     )
