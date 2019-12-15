@@ -1,12 +1,12 @@
 import { getAllCityForecastItemsWithInterval, HourlyForecast } from './CityForecasts'
 import { noop } from 'lodash'
-import CarHeaterState from './CarHeaterState'
+import TimerState from './TimerState'
 import { CronJob, CronTime } from 'cron'
 import calculateHeatingMinutes from './HeatingDurationCalculator'
 import { isHeating, nextHeatingStartInstant, nextReadyInstant } from './HeatingInstantCalculations'
 
 export default class CarHeaterService {
-  state: CarHeaterState
+  state: TimerState
   forecasts: HourlyForecast[] = []
   startCron: CronJob
   endCron: CronJob
@@ -18,13 +18,13 @@ export default class CarHeaterService {
   }
 
   start() {
-    this.state = CarHeaterState.load(this.stateFile)
+    this.state = TimerState.load(this.stateFile)
     return this.startLoadingForecasts()
   }
 
   update(readyTime: string, timerEnabled: boolean) {
-    this.state = new CarHeaterState(readyTime, timerEnabled)
-    CarHeaterState.save(this.stateFile, this.state)
+    this.state = new TimerState(readyTime, timerEnabled)
+    TimerState.save(this.stateFile, this.state)
 
     this.heatingDuration = calculateHeatingMinutes(readyTime, this.forecasts)
     const startInstant = nextHeatingStartInstant(readyTime, this.heatingDuration)

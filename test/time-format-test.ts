@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { formatHeatingState, formatTimeUntilNextAction } from '../src/public/HeaterPanel'
+import { formatTimerState, formatTimeUntilNextAction } from '../src/public/TimerPanel'
 
 describe('waiting/heating time', () => {
   it('formats correctly 1', () => {
@@ -57,5 +57,5 @@ function heatingTimeFormatting(currentTime: string, readyTime: string, heatingDu
 function heatingStateFormatting(currentTime: string, readyTime: string, heatingDuration: number) {
   const state = { timerEnabled: true, readyTime: readyTime, heatingDuration: heatingDuration }
   const now = new Date(`2019-12-12T${currentTime}:13.120Z`)
-  return formatHeatingState(state, now)
+  return formatTimerState(state, now)
 }

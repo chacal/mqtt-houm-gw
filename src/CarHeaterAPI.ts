@@ -6,7 +6,7 @@ import { Request, Response } from 'express-serve-static-core'
 import { houmSiteStream, turnOff, turnOn } from './houm'
 import { Lights } from './Lights'
 import CarHeaterService from './CarHeaterService'
-import CarHeaterState from './CarHeaterState'
+import TimerState from './TimerState'
 import { find, identity } from 'lodash'
 
 const PORT = 4000
@@ -34,8 +34,8 @@ function setupRoutes(app: Express) {
   console.log('Using public dir:', PUBLIC_DIR)
   app.use(express.static(PUBLIC_DIR))
   app.use(express.json())
-  app.get('/heater', getHeaterState)
-  app.post('/heater', updateHeaterState)
+  app.get('/heater', getTimerState)
+  app.post('/heater', updateTimerState)
 }
 
 function setupSocketIO(ioServer: Server) {
@@ -58,16 +58,16 @@ function heaterStateEmitter(emitter: Socket | Server) {
   return (heaterState: boolean) => emitter.emit('heaterState', heaterState)
 }
 
-function getHeaterState(req: Request, res: Response) {
+function getTimerState(req: Request, res: Response) {
   res.send(heater.getState())
 }
 
-function updateHeaterState(req: Request, res: Response) {
-  if (CarHeaterState.validateSerializedStateObject(req.body)) {
+function updateTimerState(req: Request, res: Response) {
+  if (TimerState.validateSerializedStateObject(req.body)) {
     heater.update(req.body.readyTime, req.body.timerEnabled)
     res.send(heater.getState())
   } else {
-    res.status(400).send({ error: `Invalid heater state: ${JSON.stringify(req.body)}` })
+    res.status(400).send({ error: `Invalid timer state: ${JSON.stringify(req.body)}` })
   }
 }
 
