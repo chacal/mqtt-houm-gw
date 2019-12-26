@@ -67,11 +67,7 @@ function renderTemperature(ctx: CanvasRenderingContext2D, temperature: number) {
 
 function renderStatusFields(ctx: CanvasRenderingContext2D, vcc: number, instance: string, rssi: number) {
   ctx.font = 'bold 14px Roboto'
-  ctx.fillText(instance, 2, 12)
-  ctx.fillText(LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), 2, 25)
-
-  renderRightAdjustedText(ctx, `${(vcc / 1000).toFixed(3)}V`, 294, 12)
-  renderRightAdjustedText(ctx, `${rssi}dBm`, 294, 25)
+  ctx.fillText(LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), 2, 12)
 }
 
 function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[]) {
