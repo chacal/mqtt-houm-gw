@@ -14,7 +14,7 @@ export default class CarHeaterService {
 
   constructor(readonly stateFile: string, readonly heaterStartAction: () => void, readonly heaterStopAction: () => void) {
     this.startCron = new CronJob('', this.enableHeater.bind(this), noop, false, 'UTC')
-    this.endCron = new CronJob('', heaterStopAction, noop, false, 'UTC')
+    this.endCron = new CronJob('',  this.stopHeater.bind(this), noop, false, 'UTC')
   }
 
   start() {
@@ -55,6 +55,11 @@ export default class CarHeaterService {
     } else {
       console.log('Heating duration is 0. Not starting heater.')
     }
+  }
+
+  private stopHeater() {
+    this.heaterStopAction()
+    this.update(this.state.readyTime, false)
   }
 
   private startLoadingForecasts(): Promise<void> {
