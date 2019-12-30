@@ -13,7 +13,7 @@ export default class CarHeaterService {
   heatingDuration: number
 
   constructor(readonly stateFile: string, readonly heaterStartAction: () => void, readonly heaterStopAction: () => void) {
-    this.startCron = new CronJob('', this.enableHeater.bind(this), noop, false, 'UTC')
+    this.startCron = new CronJob('', this.startHeater.bind(this), noop, false, 'UTC')
     this.endCron = new CronJob('',  this.stopHeater.bind(this), noop, false, 'UTC')
   }
 
@@ -39,7 +39,7 @@ export default class CarHeaterService {
     }
 
     if (timerEnabled && isHeating(readyTime, this.heatingDuration)) {
-      this.enableHeater()
+      this.startHeater()
     }
 
     console.log(`New state: ${JSON.stringify(this.state)}, heating duration: ${this.heatingDuration}, start time: ${startInstant.toISOString()}`)
@@ -49,7 +49,7 @@ export default class CarHeaterService {
     return { ...this.state, heatingDuration: this.heatingDuration }
   }
 
-  private enableHeater() {
+  private startHeater() {
     if (this.heatingDuration !== 0) {
       this.heaterStartAction()
     } else {
