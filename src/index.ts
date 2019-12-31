@@ -2,6 +2,7 @@ import { Mqtt, SensorEvents } from '@chacal/js-utils'
 import { EventStream } from 'baconjs'
 import { setupUpstairsToilet, setupDownstairsToilet, setupStorage } from './rules'
 import setupD101 from './D101'
+import setupD104 from './D104'
 import ISensorEvent = SensorEvents.ISensorEvent
 import ITemperatureEvent = SensorEvents.ITemperatureEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
@@ -16,6 +17,7 @@ const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD || undefined
 
 const OUTSIDE_TEMP_SENSOR_INSTANCE = 'S210'
+const CAR_TEMP_SENSOR_INSTANCE = 'S215'
 
 main()
 
@@ -27,16 +29,22 @@ function main() {
   const sensorEvents = Mqtt.messageStreamFrom(mqttClient)
     .map(msg => JSON.parse(msg.toString()) as ISensorEvent)
 
-  const outsideTempEvents = sensorEvents.filter(e => SensorEvents.isTemperature(e) && e.instance === OUTSIDE_TEMP_SENSOR_INSTANCE) as TempEventStream
+  const outsideTempEvents = tempEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
+  const carTempEvents = tempEventsFrom(sensorEvents, CAR_TEMP_SENSOR_INSTANCE)
 
   setupUpstairsToilet(sensorEvents)
   setupDownstairsToilet(sensorEvents)
   setupStorage(sensorEvents)
   setupD101(outsideTempEvents, publishThreadDisplayStatus)
+  setupD104(carTempEvents, publishThreadDisplayStatus)
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
 
   function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
     mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
   }
+}
+
+function tempEventsFrom(sensorEvents: EventStream<ISensorEvent>, instance: string) {
+  return sensorEvents.filter(e => SensorEvents.isTemperature(e) && e.instance === instance) as TempEventStream
 }

@@ -68,3 +68,8 @@ export function sendImageToDisplay(ipv6Destination: string, image: ImageData) {
   console.log(`Sending ${payload.length} bytes to ${url}`)
   return Coap.postOctetStream(parse(url), payload, false)
 }
+
+export function getRandomInt(max: number) {
+  max = Math.floor(max)
+  return Math.floor(Math.random() * (max + 1))
+}
