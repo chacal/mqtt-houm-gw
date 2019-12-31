@@ -11,12 +11,14 @@ import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import { ChronoUnit, Duration, LocalTime } from 'js-joda'
 import { combineTemplate, fromPromise } from 'baconjs'
+import ITemperatureEvent = SensorEvents.ITemperatureEvent
 
 require('js-joda-timezone')
 
 const VCC_POLLING_INTERVAL_MS = 5 * 60000 + getRandomInt(20000)
 const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)
 const TEMP_UPDATE_INTERVAL_MS = 60000
+const MAX_RENDERED_TEMPERATURE_AGE_S = 60  // Don't render temperatures older than 60s
 
 const D104_ADDRESS = '2001:2003:f0a2:9c9b:cf01:f04b:705c:f94b'
 const REAL_DISPLAY_WIDTH = 128
@@ -40,17 +42,22 @@ export default function setupNetworkDisplay(tempEvents: TempEventStream, display
   combined
     .first()
     .concat(combined.sample(RENDER_INTERVAL))
-    .map(v => render(v.tempEvent.temperature))
+    .map(v => render(v.tempEvent))
     .onValue(imageData => sendImageToDisplay(D104_ADDRESS, imageData))
 }
 
-export function render(carTemperature: number) {
+export function render(carTemperature: ITemperatureEvent) {
+  const sSinceTemperatureEvent = (new Date().getTime() - new Date(carTemperature.ts).getTime()) / 1000
+  const temperatureStr = sSinceTemperatureEvent < MAX_RENDERED_TEMPERATURE_AGE_S ?
+    carTemperature.temperature.toFixed(1) + '°C' :
+    'N/A'
+
   const ctx = getContext(REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT)
   ctx.translate(0, REAL_DISPLAY_HEIGHT)
   ctx.rotate(-90 * Math.PI / 180)
 
   ctx.font = 'bold 70px Open Sans'
-  renderCenteredText(ctx, carTemperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 88)
+  renderCenteredText(ctx, temperatureStr, DISPLAY_WIDTH / 2, 88)
 
   ctx.font = '20px Open Sans'
   renderRightAdjustedText(ctx, 'Car', 248, 18)
