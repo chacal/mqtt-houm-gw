@@ -1,4 +1,4 @@
-import { Mqtt, SensorEvents } from '@chacal/js-utils'
+import { Coap, Mqtt, SensorEvents } from '@chacal/js-utils'
 import { EventStream } from 'baconjs'
 import { setupUpstairsToilet, setupDownstairsToilet, setupStorage } from './rules'
 import setupD101 from './D101'
@@ -31,6 +31,10 @@ function main() {
 
   const outsideTempEvents = tempEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
   const carTempEvents = tempEventsFrom(sensorEvents, CAR_TEMP_SENSOR_INSTANCE)
+
+  Coap.updateTiming({
+    ackTimeout: 30  // Use 30s ack timeout
+  })
 
   setupUpstairsToilet(sensorEvents)
   setupDownstairsToilet(sensorEvents)
