@@ -18,7 +18,7 @@ require('js-joda-timezone')
 const VCC_POLLING_INTERVAL_MS = 5 * 60000 + getRandomInt(20000)
 const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)
 const TEMP_UPDATE_INTERVAL_MS = 60000
-const MAX_RENDERED_TEMPERATURE_AGE_S = 60  // Don't render temperatures older than 60s
+const MAX_RENDERED_TEMPERATURE_AGE_S = 3 * 60  // Don't render temperatures older than 3 minutes
 
 const D104_ADDRESS = '2001:2003:f0a2:9c9b:cf01:f04b:705c:f94b'
 const REAL_DISPLAY_WIDTH = 128
