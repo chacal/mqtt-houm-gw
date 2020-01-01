@@ -7,7 +7,7 @@ import { CanvasRenderingContext2D, registerFont } from 'canvas'
 
 import { TempEventStream } from './index'
 import {
-  getContext,
+  getContext, getRandomInt,
   paddedHoursFor,
   renderCenteredText,
   renderImage, renderRightAdjustedText, sendImageToDisplay,
@@ -25,9 +25,9 @@ const DISPLAY_WIDTH = 296
 const DISPLAY_HEIGHT = 128
 
 const TEMP_UPDATE_INTERVAL_MS = 60000
-const VCC_POLLING_INTERVAL_MS = 5 * 60000
+const VCC_POLLING_INTERVAL_MS = 5 * 60000 + getRandomInt(20000)
 const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
-const RENDER_INTERVAL = 10 * 60000
+const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)
 
 registerFont(resolve(__dirname, './Roboto-Bold.ttf'), { family: 'Roboto', weight: 'bold' })
 registerFont(resolve(__dirname, './OpenSans-Bold.ttf'), { family: 'Open Sans', weight: 'bold' })
