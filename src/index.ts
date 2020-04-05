@@ -45,7 +45,10 @@ function main() {
   setupCarHeaterAPI()
 
   function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
-    mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status))
+    mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status), {
+      retain: true,
+      qos: 1
+    })
   }
 }
 

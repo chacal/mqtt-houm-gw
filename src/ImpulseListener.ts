@@ -32,7 +32,7 @@ function handleUdpMessage(msg: Buffer, mqttClient: MqttClient) {
       ts: new Date().toISOString()
     }
 
-    mqttClient.publish(`/sensor/${json.instance}/i/state`, JSON.stringify(event))
+    mqttClient.publish(`/sensor/${json.instance}/i/state`, JSON.stringify(event), { retain: true, qos: 1 })
   } catch (e) {
     console.log(`Invalid impulse event packet! Packet was: ${msg.toString()}`, e)
   }
