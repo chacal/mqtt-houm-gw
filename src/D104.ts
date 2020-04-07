@@ -2,16 +2,19 @@ import { resolve } from 'path'
 import { registerFont } from 'canvas'
 
 import {
-  getContext, getRandomInt,
-  renderCenteredText, renderRightAdjustedText,
-  sendImageToDisplay, temperaturesWithInterval,
+  environmentsWithInterval,
+  getContext,
+  getRandomInt,
+  renderCenteredText,
+  renderRightAdjustedText,
+  sendImageToDisplay,
 } from './utils'
-import { TempEventStream } from './index'
+import { EnvironmentEventStream } from './index'
 import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
-import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import { ChronoUnit, Duration, LocalTime } from 'js-joda'
-import { combineTemplate, fromPromise } from 'baconjs'
-import ITemperatureEvent = SensorEvents.ITemperatureEvent
+import { combineTemplate } from 'baconjs'
+import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
+import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 
 require('js-joda-timezone')
 
@@ -28,12 +31,12 @@ const DISPLAY_HEIGHT = 122
 
 registerFont(resolve(__dirname, './OpenSans-Bold.ttf'), { family: 'Open Sans', weight: 'bold' })
 
-export default function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
+export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
   const statuses = NetworkDisplay.statusesWithInterval(D104_ADDRESS, VCC_POLLING_INTERVAL_MS)
-  const temperatures = temperaturesWithInterval(Duration.ofMillis(TEMP_UPDATE_INTERVAL_MS), tempEvents)
+  const environments = environmentsWithInterval(Duration.ofMillis(TEMP_UPDATE_INTERVAL_MS), environmentEvents)
 
   const combined = combineTemplate({
-    tempEvent: temperatures,
+    environmentEvent: environments,
     status: statuses
   })
 
@@ -42,11 +45,11 @@ export default function setupNetworkDisplay(tempEvents: TempEventStream, display
   combined
     .first()
     .concat(combined.sample(RENDER_INTERVAL))
-    .map(v => render(v.tempEvent))
+    .map(v => render(v.environmentEvent))
     .onValue(imageData => sendImageToDisplay(D104_ADDRESS, imageData))
 }
 
-export function render(carTemperature: ITemperatureEvent) {
+export function render(carTemperature: IEnvironmentEvent) {
   const sSinceTemperatureEvent = (new Date().getTime() - new Date(carTemperature.ts).getTime()) / 1000
   const temperatureStr = sSinceTemperatureEvent < MAX_RENDERED_TEMPERATURE_AGE_S ?
     carTemperature.temperature.toFixed(1) + '°C' :

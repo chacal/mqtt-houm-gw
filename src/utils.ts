@@ -3,7 +3,7 @@ import { ZonedDateTime, LocalTime, ZoneId, Duration } from 'js-joda'
 import { CanvasRenderUtils, Coap } from '@chacal/js-utils'
 import { parse } from 'url'
 import { gzipSync } from 'zlib'
-import { TempEventStream } from './index'
+import { EnvironmentEventStream } from './index'
 import { ForecastItem } from './CityForecasts'
 
 import getDefaultContext = CanvasRenderUtils.getDefaultContext
@@ -12,10 +12,10 @@ import toBinaryImage = CanvasRenderUtils.toBinaryImage
 
 require('js-joda-timezone')
 
-export function temperaturesWithInterval(interval: Duration, tempEvents: TempEventStream): TempEventStream {
-  return tempEvents
+export function environmentsWithInterval(interval: Duration, environmentEvents: EnvironmentEventStream): EnvironmentEventStream {
+  return environmentEvents
     .first()
-    .merge(tempEvents
+    .merge(environmentEvents
       .toProperty()
       .sample(interval.toMillis())
     )

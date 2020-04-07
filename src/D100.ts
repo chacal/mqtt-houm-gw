@@ -1,31 +1,31 @@
 import { parse } from 'url'
 import { combineTemplate, EventStream } from 'baconjs'
-import { LocalTime, ChronoUnit, Duration } from 'js-joda'
-import { SensorEvents, Coap, NetworkDisplay } from '@chacal/js-utils'
-import ITemperatureEvent = SensorEvents.ITemperatureEvent
-import { TempEventStream } from './index'
+import { ChronoUnit, Duration, LocalTime } from 'js-joda'
+import { Coap, NetworkDisplay, SensorEvents } from '@chacal/js-utils'
+import { EnvironmentEventStream } from './index'
+import { environmentsWithInterval, localTimeFor } from './utils'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
-import { localTimeFor, temperaturesWithInterval } from './utils'
+import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 
 require('js-joda-timezone')
 
-type CombinedStream = EventStream<{ tempEvent: ITemperatureEvent, status: NetworkDisplay.DisplayStatus }>
+type CombinedStream = EventStream<{ environmentEvent: IEnvironmentEvent, status: NetworkDisplay.DisplayStatus }>
 
 const DISPLAY_ADDRESS = '2001:2003:f0a2:9c9b:e3d2:e57d:c507:d253'
 const TEMP_RENDERING_INTERVAL_MS = 2 * 60000
 const VCC_POLLING_INTERVAL_MS = 10 * 60000
 
 
-export default function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
+export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
   const statuses = NetworkDisplay.statusesWithInterval(DISPLAY_ADDRESS, VCC_POLLING_INTERVAL_MS)
-  const temperatures = temperaturesWithInterval(Duration.ofMillis(TEMP_RENDERING_INTERVAL_MS), tempEvents)
+  const environments = environmentsWithInterval(Duration.ofMillis(TEMP_RENDERING_INTERVAL_MS), environmentEvents)
   const combined = combineTemplate({
-    tempEvent: temperatures,
+    environmentEvent: environments,
     status: statuses
   }) as any as CombinedStream
 
   statuses.onValue(displayStatusCb)
-  combined.onValue(v => renderOutsideTemp(v.tempEvent.temperature, v.status.vcc, v.status.instance, localTimeFor(v.tempEvent.ts)))
+  combined.onValue(v => renderOutsideTemp(v.environmentEvent.temperature, v.status.vcc, v.status.instance, localTimeFor(v.environmentEvent.ts)))
 }
 
 function renderOutsideTemp(temperature: number, vcc: number, instance: string, timestamp: LocalTime) {

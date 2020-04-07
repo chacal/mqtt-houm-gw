@@ -1,16 +1,16 @@
 import { Coap, Mqtt, SensorEvents } from '@chacal/js-utils'
 import { EventStream } from 'baconjs'
-import { setupUpstairsToilet, setupDownstairsToilet, setupStorage } from './rules'
+import { setupDownstairsToilet, setupStorage, setupUpstairsToilet } from './rules'
 import setupD101 from './D101'
 import setupD104 from './D104'
-import ISensorEvent = SensorEvents.ISensorEvent
-import ITemperatureEvent = SensorEvents.ITemperatureEvent
-import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import setupImpulseListener from './ImpulseListener'
 import setupCarHeaterAPI from './CarHeaterAPI'
 import { connectHoumWs } from './houm'
+import ISensorEvent = SensorEvents.ISensorEvent
+import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
+import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 
-export type TempEventStream = EventStream<ITemperatureEvent>
+export type EnvironmentEventStream = EventStream<IEnvironmentEvent>
 
 const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtt://mqtt-home.chacal.fi'
 const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined
@@ -29,8 +29,8 @@ function main() {
   const sensorEvents = Mqtt.messageStreamFrom(mqttClient)
     .map(msg => JSON.parse(msg.toString()) as ISensorEvent)
 
-  const outsideTempEvents = tempEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
-  const carTempEvents = tempEventsFrom(sensorEvents, CAR_TEMP_SENSOR_INSTANCE)
+  const outsideTempEvents = environmentEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
+  const carTempEvents = environmentEventsFrom(sensorEvents, CAR_TEMP_SENSOR_INSTANCE)
 
   Coap.updateTiming({
     ackTimeout: 30  // Use 30s ack timeout
@@ -52,6 +52,6 @@ function main() {
   }
 }
 
-function tempEventsFrom(sensorEvents: EventStream<ISensorEvent>, instance: string) {
-  return sensorEvents.filter(e => SensorEvents.isTemperature(e) && e.instance === instance) as TempEventStream
+function environmentEventsFrom(sensorEvents: EventStream<ISensorEvent>, instance: string) {
+  return sensorEvents.filter(e => SensorEvents.isEnvironment(e) && e.instance === instance) as EnvironmentEventStream
 }

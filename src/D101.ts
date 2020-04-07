@@ -1,20 +1,21 @@
 import { combineTemplate, fromPromise } from 'baconjs'
-import { LocalTime, Duration, ChronoUnit } from 'js-joda'
+import { ChronoUnit, Duration, LocalTime } from 'js-joda'
 import { zip } from 'lodash'
 import { resolve } from 'path'
-import { SensorEvents, NetworkDisplay } from '@chacal/js-utils'
+import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
 import { CanvasRenderingContext2D, registerFont } from 'canvas'
 
-import { TempEventStream } from './index'
+import { EnvironmentEventStream } from './index'
 import {
-  getContext, getRandomInt,
+  environmentsWithInterval,
+  getContext,
+  getRandomInt,
   paddedHoursFor,
   renderCenteredText,
-  renderImage, renderRightAdjustedText, sendImageToDisplay,
-  temperaturesWithInterval
+  renderImage,
+  sendImageToDisplay
 } from './utils'
 import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
-
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
 require('js-joda-timezone')
@@ -32,12 +33,12 @@ const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)
 registerFont(resolve(__dirname, './Roboto-Bold.ttf'), { family: 'Roboto', weight: 'bold' })
 registerFont(resolve(__dirname, './OpenSans-Bold.ttf'), { family: 'Open Sans', weight: 'bold' })
 
-export default function setupNetworkDisplay(tempEvents: TempEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
+export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
   const statuses = NetworkDisplay.statusesWithInterval(D101_ADDRESS, VCC_POLLING_INTERVAL_MS)
-  const temperatures = temperaturesWithInterval(Duration.ofMillis(TEMP_UPDATE_INTERVAL_MS), tempEvents)
+  const environments = environmentsWithInterval(Duration.ofMillis(TEMP_UPDATE_INTERVAL_MS), environmentEvents)
   const forecasts = cityForecastsWithInterval('espoo', FORECAST_UPDATE_INTERVAL_MS)
   const combined = combineTemplate({
-    tempEvent: temperatures,
+    environmentEvent: environments,
     status: statuses,
     forecasts
   })
@@ -48,7 +49,7 @@ export default function setupNetworkDisplay(tempEvents: TempEventStream, display
     .first()
     .concat(combined.sample(RENDER_INTERVAL))
     .flatMapLatest(v =>
-      fromPromise(render(v.tempEvent.temperature, v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.forecasts))
+      fromPromise(render(v.environmentEvent.temperature, v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.forecasts))
     )
     .onValue(imageData => sendImageToDisplay(D101_ADDRESS, imageData))
 }
