@@ -13,8 +13,8 @@ export default class CarHeaterService {
   heatingDuration: number
 
   constructor(readonly stateFile: string, readonly heaterStartAction: () => void, readonly heaterStopAction: () => void) {
-    this.startCron = new CronJob('', this.startHeater.bind(this), noop, false, 'UTC')
-    this.endCron = new CronJob('',  this.stopHeater.bind(this), noop, false, 'UTC')
+    this.startCron = new CronJob('* * * * *', this.startHeater.bind(this), noop, false, 'UTC')
+    this.endCron = new CronJob('* * * * *',  this.stopHeater.bind(this), noop, false, 'UTC')
   }
 
   start() {
