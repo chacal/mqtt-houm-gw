@@ -1,14 +1,12 @@
 import { CanvasRenderingContext2D, Image } from 'canvas'
 import { ZonedDateTime, LocalTime, ZoneId, Duration } from 'js-joda'
-import { CanvasRenderUtils, Coap } from '@chacal/js-utils'
+import { Coap } from '@chacal/js-utils'
 import { parse } from 'url'
 import { gzipSync } from 'zlib'
 import { EnvironmentEventStream } from './index'
 import { ForecastItem } from './CityForecasts'
 
-import getDefaultContext = CanvasRenderUtils.getDefaultContext
-import getTextCenter = CanvasRenderUtils.getTextCenter
-import toBinaryImage = CanvasRenderUtils.toBinaryImage
+import { getDefaultContext, getTextCenter, toBinaryImage } from '@chacal/canvas-render-utils'
 
 require('js-joda-timezone')
 

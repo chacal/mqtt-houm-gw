@@ -1,10 +1,9 @@
 import { chunk, sumBy } from 'lodash'
 import fetch from 'node-fetch'
-import { ChronoUnit, LocalTime, ZonedDateTime, ZoneId } from 'js-joda'
-import { CanvasRenderUtils } from '@chacal/js-utils'
-import saveToPngFile = CanvasRenderUtils.saveToPngFile
+import { ChronoUnit, ZonedDateTime, ZoneId } from 'js-joda'
+import { saveToPngFile } from '@chacal/canvas-render-utils'
 import { render } from './D101'
-import { Property, fromPromise, interval, once } from 'baconjs'
+import { fromPromise, interval, once, Property } from 'baconjs'
 
 require('js-joda-timezone')
 
