@@ -11,7 +11,7 @@
   "dependencies": {
     "@chacal/canvas-render-utils": "^1.0.0",
     "@chacal/js-utils": "^2.0.0",
-    "@date-io/date-fns": "^2.6.1",
+    "@date-io/date-fns": "^1.3.13",
     "@material-ui/core": "^4.9.12",
     "@material-ui/pickers": "^3.2.10",
     "@types/cron": "^1.7.2",
