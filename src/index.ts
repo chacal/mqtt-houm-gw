@@ -26,8 +26,16 @@ function main() {
   mqttClient.subscribe('/sensor/+/+/state')
   connectHoumWs()
 
-  const sensorEvents = Mqtt.messageStreamFrom(mqttClient)
-    .map(msg => JSON.parse(msg.toString()) as ISensorEvent)
+  const sensorEvents: EventStream<ISensorEvent> = Mqtt.messageStreamFrom(mqttClient)
+    .map(msg => {
+      try {
+        return JSON.parse(msg.toString())
+      } catch {
+        console.error('Got invalid sensor event: ' + msg.toString())
+        return null
+      }
+    })
+    .filter(e => e !== null)
 
   const outsideTempEvents = environmentEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
   const carTempEvents = environmentEventsFrom(sensorEvents, CAR_TEMP_SENSOR_INSTANCE)
