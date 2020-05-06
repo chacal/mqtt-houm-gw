@@ -21,7 +21,7 @@ import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 require('js-joda-timezone')
 
 
-const D101_ADDRESS = '2001:2003:f0a2:9c9b:df57:1c0e:d67e:7e28'
+const D101_ADDRESS = 'fddd:eeee:ffff:0061:8543:9184:2e26:d063'
 const DISPLAY_WIDTH = 296
 const DISPLAY_HEIGHT = 128
 

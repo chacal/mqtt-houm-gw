@@ -23,7 +23,7 @@ const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)
 const TEMP_UPDATE_INTERVAL_MS = 60000
 const MAX_RENDERED_TEMPERATURE_AGE_S = 3 * 60  // Don't render temperatures older than 3 minutes
 
-const D104_ADDRESS = '2001:2003:f0a2:9c9b:cf01:f04b:705c:f94b'
+const D104_ADDRESS = 'fddd:eeee:ffff:0061:4579:2df8:83c4:88fa'
 const REAL_DISPLAY_WIDTH = 128
 const REAL_DISPLAY_HEIGHT = 250
 const DISPLAY_WIDTH = 250
