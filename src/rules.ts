@@ -60,7 +60,7 @@ export function setupDownstairsToilet(sensorEvents: SensorEventStream) {
 
 export function setupStorage(sensorEvents: SensorEventStream) {
   const INSTANCE1 = 'P300'
-  const INSTANCE2 = 'P301'
+  const INSTANCE2 = 'P309'
   const TAG = 'k'
 
   const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
