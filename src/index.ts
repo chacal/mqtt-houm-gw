@@ -12,7 +12,7 @@ import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 
 export type EnvironmentEventStream = EventStream<IEnvironmentEvent>
 
-const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtt://mqtt-home.chacal.fi'
+const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtts://mqtt-home.chacal.fi'
 const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD || undefined
 
