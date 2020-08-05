@@ -48,8 +48,7 @@ function main() {
   setupDownstairsToilet(sensorEvents)
   setupStorage(sensorEvents)
   setupD101(outsideTempEvents, publishThreadDisplayStatus)
-  // Not used for now
-  // setupD104(carTempEvents, publishThreadDisplayStatus)
+  setupD104(carTempEvents, publishThreadDisplayStatus)
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
 

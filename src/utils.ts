@@ -6,7 +6,7 @@ import { gzipSync } from 'zlib'
 import { EnvironmentEventStream } from './index'
 import { ForecastItem } from './CityForecasts'
 
-import { getDefaultContext, getTextCenter, toBinaryImage } from '@chacal/canvas-render-utils'
+import { getDefaultContext, getTextCenter, toBinaryImage, toBWRGrayScale } from '@chacal/canvas-render-utils'
 
 require('js-joda-timezone')
 
@@ -61,8 +61,16 @@ export function getContext(w: number, h: number, rotate: boolean = false) {
 }
 
 export function sendImageToDisplay(ipv6Destination: string, image: ImageData) {
-  const payload = gzipSync(toBinaryImage(image))
+  return sendCompressedDataToDisplay(ipv6Destination, toBinaryImage(image))
+}
+
+export function sendBWRImageToDisplay(ipv6Destination: string, image: ImageData) {
+  return sendCompressedDataToDisplay(ipv6Destination, toBWRGrayScale(image))
+}
+
+function sendCompressedDataToDisplay(ipv6Destination: string, uncompressed: Buffer) {
   const url = `coap://[${ipv6Destination}]/api/image`
+  const payload = gzipSync(uncompressed)
   console.log(`Sending ${payload.length} bytes to ${url}`)
   return Coap.postOctetStream(parse(url), payload, false)
 }
