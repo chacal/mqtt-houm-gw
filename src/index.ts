@@ -1,7 +1,7 @@
 import { Coap, Mqtt, SensorEvents } from '@chacal/js-utils'
 import { EventStream } from 'baconjs'
 import { setupDownstairsToilet, setupStorage, setupUpstairsToilet } from './rules'
-import setupD101 from './D101'
+import setupD107 from './D107'
 import setupD104 from './D104'
 import setupImpulseListener from './ImpulseListener'
 import setupCarHeaterAPI from './CarHeaterAPI'
@@ -47,7 +47,7 @@ function main() {
   setupUpstairsToilet(sensorEvents)
   setupDownstairsToilet(sensorEvents)
   setupStorage(sensorEvents)
-  setupD101(outsideTempEvents, publishThreadDisplayStatus)
+  setupD107(outsideTempEvents, publishThreadDisplayStatus)
   setupD104(carTempEvents, publishThreadDisplayStatus)
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
