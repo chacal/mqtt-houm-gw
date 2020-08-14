@@ -1,40 +1,38 @@
 import { combineTemplate, fromPromise } from 'baconjs'
 import { ChronoUnit, Duration, LocalTime } from 'js-joda'
 import { zip } from 'lodash'
-import { resolve } from 'path'
 import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
-import { CanvasRenderingContext2D, registerFont } from 'canvas'
+import { CanvasRenderingContext2D } from 'canvas'
 
 import { EnvironmentEventStream } from './index'
 import {
   environmentsWithInterval,
-  getContext,
   getRandomInt,
   paddedHoursFor,
   renderCenteredText,
   renderImage,
-  sendImageToDisplay
+  sendBWRImageToDisplay
 } from './utils'
 import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
+import { getContext } from '@chacal/canvas-render-utils'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
 require('js-joda-timezone')
 
-
-const D101_ADDRESS = 'fddd:eeee:ffff:0061:8543:9184:2e26:d063'
-const DISPLAY_WIDTH = 296
-const DISPLAY_HEIGHT = 128
+const D107_ADDRESS = 'fddd:eeee:ffff:0061:bc64:d945:2096:8f1e'
+const REAL_DISPLAY_WIDTH = 128
+const REAL_DISPLAY_HEIGHT = 296
+const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
+const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
 const TEMP_UPDATE_INTERVAL_MS = 60000
 const VCC_POLLING_INTERVAL_MS = 5 * 60000 + getRandomInt(20000)
 const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
 const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)
 
-registerFont(resolve(__dirname, './Roboto-Bold.ttf'), { family: 'Roboto', weight: 'bold' })
-registerFont(resolve(__dirname, './OpenSans-Bold.ttf'), { family: 'Open Sans', weight: 'bold' })
 
 export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
-  const statuses = NetworkDisplay.statusesWithInterval(D101_ADDRESS, VCC_POLLING_INTERVAL_MS)
+  const statuses = NetworkDisplay.statusesWithInterval(D107_ADDRESS, VCC_POLLING_INTERVAL_MS)
   const environments = environmentsWithInterval(Duration.ofMillis(TEMP_UPDATE_INTERVAL_MS), environmentEvents)
   const forecasts = cityForecastsWithInterval('espoo', FORECAST_UPDATE_INTERVAL_MS)
   const combined = combineTemplate({
@@ -51,24 +49,25 @@ export default function setupNetworkDisplay(environmentEvents: EnvironmentEventS
     .flatMapLatest(v =>
       fromPromise(render(v.environmentEvent.temperature, v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.forecasts))
     )
-    .onValue(imageData => sendImageToDisplay(D101_ADDRESS, imageData))
+    .onValue(imageData => sendBWRImageToDisplay(D107_ADDRESS, imageData))
 }
 
 export function render(temperature: number, vcc: number, instance: string, rssi: number, forecasts: ForecastItem[]) {
-  const ctx = getContext(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+  const ctx = getContext(REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT, true)
+  ctx.antialias = 'default'
   renderTemperature(ctx, temperature)
   renderStatusFields(ctx, vcc, instance, rssi)
   return renderForecasts(ctx, forecasts)
 }
 
 function renderTemperature(ctx: CanvasRenderingContext2D, temperature: number) {
-  ctx.font = 'bold 40px "Open Sans"'
-  renderCenteredText(ctx, temperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 31)
+  ctx.font = '42px OpenSans700'
+  renderCenteredText(ctx, temperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 32)
 }
 
 function renderStatusFields(ctx: CanvasRenderingContext2D, vcc: number, instance: string, rssi: number) {
-  ctx.font = 'bold 14px Roboto'
-  ctx.fillText(LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), 2, 12)
+  ctx.font = '16px Roboto700'
+  ctx.fillText(LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), 2, 14)
 }
 
 function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[]) {
@@ -78,17 +77,20 @@ function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[
     zip(forecastColumnXCoords, forecasts)
       .map(([x, forecast]: [number, ForecastItem]) => renderForecast(ctx, x, forecast))
   )
-    .then(() => ctx.getImageData(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT))
+    .then(() => ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT))
 }
 
 function renderForecast(ctx: CanvasRenderingContext2D, x: number, forecast: ForecastItem) {
-  ctx.font = 'bold 20px Helvetica'
+  ctx.font = '20px Roboto700'
   renderCenteredText(ctx, Math.round(forecast.temperature) + '°C', x, 106)
 
-  ctx.font = 'bold 15px Helvetica'
+  ctx.font = '15px Roboto700'
   renderCenteredText(ctx, paddedHoursFor(forecast), x, 48)
-  ctx.font = 'bold 16px Helvetica'
+  ctx.font = '17px Roboto700'
   renderCenteredText(ctx, forecast.precipitation.toFixed(1), x, 125)
 
+  // Render symbol twice with 'multiply' composite to make it appear darker on 4-gray display
+  ctx.globalCompositeOperation = 'multiply'
   return renderImage(ctx, forecast.symbolSvg, x - 24, 40, 50, 50)
+    .then(() => renderImage(ctx, forecast.symbolSvg, x - 24, 40, 50, 50))
 }

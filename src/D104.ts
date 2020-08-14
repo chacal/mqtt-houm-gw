@@ -1,6 +1,5 @@
 import {
   environmentsWithInterval,
-  getContext,
   getRandomInt,
   renderCenteredText,
   renderRightAdjustedText,
@@ -12,6 +11,7 @@ import { ChronoUnit, Duration, LocalTime } from 'js-joda'
 import { combineTemplate } from 'baconjs'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
+import { getContext } from '@chacal/canvas-render-utils'
 
 require('js-joda-timezone')
 

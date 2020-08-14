@@ -1,12 +1,12 @@
 import { CanvasRenderingContext2D, Image } from 'canvas'
-import { ZonedDateTime, LocalTime, ZoneId, Duration } from 'js-joda'
+import { Duration, LocalTime, ZonedDateTime, ZoneId } from 'js-joda'
 import { Coap } from '@chacal/js-utils'
 import { parse } from 'url'
 import { gzipSync } from 'zlib'
 import { EnvironmentEventStream } from './index'
 import { ForecastItem } from './CityForecasts'
 
-import { getDefaultContext, getTextCenter, toBinaryImage, toBWRGrayScale } from '@chacal/canvas-render-utils'
+import { getTextCenter, toBinaryImage, toBWRGrayScale } from '@chacal/canvas-render-utils'
 
 require('js-joda-timezone')
 
@@ -49,15 +49,6 @@ export function renderImage(ctx: CanvasRenderingContext2D, img: Buffer, x: numbe
 
 export function paddedHoursFor(forecast: ForecastItem) {
   return forecast.time.hour().toString().padStart(2, '0')
-}
-
-export function getContext(w: number, h: number, rotate: boolean = false) {
-  const ctx = getDefaultContext(w, h)
-  if (rotate) {
-    ctx.translate(w, 0)
-    ctx.rotate(90 * Math.PI / 180)
-  }
-  return ctx
 }
 
 export function sendImageToDisplay(ipv6Destination: string, image: ImageData) {
