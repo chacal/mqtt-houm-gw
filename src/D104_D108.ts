@@ -19,6 +19,7 @@ const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
 const VCC_POLLING_INTERVAL_MS = () => 5 * 60000 + getRandomInt(20000)
 const RENDER_CRON_EXPRESSION = '1,6,20,40 * * * *'
+const MAX_RANDOM_RENDER_DELAY_MS = 60000
 
 const HOUR_COUNT = 24
 const BAR_GAP_PIXELS = 2
@@ -49,7 +50,7 @@ function setupPriceDisplay(prices: EventStream<SpotPrice[]>, displayAddress: str
     .first()
     .concat(combined.sampledBy(prices))
     .map(v => render(v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.prices))
-    .onValue(imageData => sendBWRImageToDisplay(displayAddress, imageData))
+    .onValue(imageData => setTimeout(() => sendBWRImageToDisplay(displayAddress, imageData), getRandomInt(MAX_RANDOM_RENDER_DELAY_MS)))
 }
 
 function createPricesStream() {
