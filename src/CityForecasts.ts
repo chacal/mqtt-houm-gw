@@ -1,11 +1,11 @@
 import { chunk, sumBy } from 'lodash'
 import fetch from 'node-fetch'
-import { ChronoUnit, ZonedDateTime, ZoneId } from 'js-joda'
+import { ChronoUnit, ZonedDateTime, ZoneId } from '@js-joda/core'
 import { saveToPngFile } from '@chacal/canvas-render-utils'
 import { render } from './D107'
 import { fromPromise, interval, once, Property } from 'baconjs'
 
-require('js-joda-timezone')
+import '@js-joda/timezone'
 
 export interface ForecastItem {
   time: ZonedDateTime,

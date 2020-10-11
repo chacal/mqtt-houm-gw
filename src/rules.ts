@@ -1,6 +1,6 @@
 import { EventStream, later } from 'baconjs'
 import { SensorEvents } from '@chacal/js-utils'
-import { LocalTime } from 'js-joda'
+import { LocalTime } from '@js-joda/core'
 import ISensorEvent = SensorEvents.ISensorEvent
 import IPirEvent = SensorEvents.IPirEvent
 import { turnOn, turnOff, applyScene } from './houm'

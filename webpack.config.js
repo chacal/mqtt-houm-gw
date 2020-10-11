@@ -21,11 +21,12 @@ module.exports = {
     ],
   },
   plugins: [
-    new CopyWebpackPlugin([
-      { from: '*.html', context: 'src/public' },
-      { from: '*.png', context: 'src/public' },
-      { from: '*.ttf', context: 'src', to: '..' },
-    ])
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: '*.html', context: 'src/public' },
+        { from: '*.png', context: 'src/public' }
+      ]
+    })
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js']

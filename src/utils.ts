@@ -1,5 +1,5 @@
 import { CanvasRenderingContext2D, Image } from 'canvas'
-import { Duration, LocalTime, ZonedDateTime, ZoneId } from 'js-joda'
+import { Duration, LocalTime, ZonedDateTime, ZoneId } from '@js-joda/core'
 import { Coap } from '@chacal/js-utils'
 import { parse } from 'url'
 import { gzipSync } from 'zlib'
@@ -8,7 +8,7 @@ import { ForecastItem } from './CityForecasts'
 
 import { getTextCenter, toBinaryImage, toBWRGrayScale } from '@chacal/canvas-render-utils'
 
-require('js-joda-timezone')
+import '@js-joda/timezone'
 
 export function environmentsWithInterval(interval: Duration, environmentEvents: EnvironmentEventStream): EnvironmentEventStream {
   return environmentEvents

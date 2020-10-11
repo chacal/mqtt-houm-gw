@@ -7,13 +7,11 @@ import {
 } from './utils'
 import { EnvironmentEventStream } from './index'
 import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
-import { ChronoUnit, Duration, LocalTime } from 'js-joda'
+import { ChronoUnit, Duration, LocalTime } from '@js-joda/core'
 import { combineTemplate } from 'baconjs'
+import { getContext } from '@chacal/canvas-render-utils'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
-import { getContext } from '@chacal/canvas-render-utils'
-
-require('js-joda-timezone')
 
 const VCC_POLLING_INTERVAL_MS = 5 * 60000 + getRandomInt(20000)
 const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)

@@ -1,5 +1,5 @@
 import { combineTemplate, fromPromise } from 'baconjs'
-import { ChronoUnit, Duration, LocalTime } from 'js-joda'
+import { ChronoUnit, Duration, LocalTime } from '@js-joda/core'
 import { zip } from 'lodash'
 import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
 import { CanvasRenderingContext2D } from 'canvas'
@@ -16,8 +16,6 @@ import {
 import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
 import { getContext } from '@chacal/canvas-render-utils'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
-
-require('js-joda-timezone')
 
 const D107_ADDRESS = 'fddd:eeee:ffff:0061:bc64:d945:2096:8f1e'
 const REAL_DISPLAY_WIDTH = 128
