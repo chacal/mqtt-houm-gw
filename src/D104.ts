@@ -1,15 +1,9 @@
-import {
-  environmentsWithInterval,
-  getRandomInt,
-  renderCenteredText,
-  renderRightAdjustedText,
-  sendBWRImageToDisplay,
-} from './utils'
+import { environmentsWithInterval, getRandomInt, sendBWRImageToDisplay, } from './utils'
 import { EnvironmentEventStream } from './index'
 import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
 import { ChronoUnit, Duration, LocalTime } from '@js-joda/core'
 import { combineTemplate } from 'baconjs'
-import { getContext } from '@chacal/canvas-render-utils'
+import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 

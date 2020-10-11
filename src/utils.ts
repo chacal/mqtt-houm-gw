@@ -1,12 +1,12 @@
 import { CanvasRenderingContext2D, Image } from 'canvas'
-import { Duration, LocalTime, ZonedDateTime, ZoneId } from '@js-joda/core'
+import { Duration } from '@js-joda/core'
 import { Coap } from '@chacal/js-utils'
 import { parse } from 'url'
 import { gzipSync } from 'zlib'
 import { EnvironmentEventStream } from './index'
 import { ForecastItem } from './CityForecasts'
 
-import { getTextCenter, toBinaryImage, toBWRGrayScale } from '@chacal/canvas-render-utils'
+import { toBinaryImage, toBWRGrayScale } from '@chacal/canvas-render-utils'
 
 import '@js-joda/timezone'
 
@@ -17,22 +17,6 @@ export function environmentsWithInterval(interval: Duration, environmentEvents: 
       .toProperty()
       .sample(interval.toMillis())
     )
-}
-
-export function localTimeFor(timestamp: string): LocalTime {
-  return ZonedDateTime
-    .parse(timestamp)
-    .withZoneSameInstant(ZoneId.of('Europe/Helsinki'))
-    .toLocalTime()
-}
-
-export function renderCenteredText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
-  ctx.fillText(text, x - getTextCenter(ctx, text).x, y)
-}
-
-export function renderRightAdjustedText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
-  const t = ctx.measureText(text)
-  ctx.fillText(text, x - t.width, y)
 }
 
 export function renderImage(ctx: CanvasRenderingContext2D, img: Buffer, x: number, y: number, w: number, h: number) {

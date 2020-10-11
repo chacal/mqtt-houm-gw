@@ -9,12 +9,11 @@ import {
   environmentsWithInterval,
   getRandomInt,
   paddedHoursFor,
-  renderCenteredText,
   renderImage,
   sendBWRImageToDisplay
 } from './utils'
 import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
-import { getContext } from '@chacal/canvas-render-utils'
+import { getContext, renderCenteredText } from '@chacal/canvas-render-utils'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
 const D107_ADDRESS = 'fddd:eeee:ffff:0061:bc64:d945:2096:8f1e'
