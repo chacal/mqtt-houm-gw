@@ -89,7 +89,7 @@ function renderPriceBars(ctx: CanvasRenderingContext2D, prices: SpotPrice[]) {
 
   prices
     .forEach((price, i) => {
-      const barHeight = (price.price / GRAPH_MAX_PRICE) * GRAPH_HEIGHT_PIXELS
+      const barHeight = (retailPrice(price) / GRAPH_MAX_PRICE) * GRAPH_HEIGHT_PIXELS
       ctx.fillRect(GRAPH_MARGIN + i * SLOT_WIDTH, GRAPH_HEIGHT_PIXELS, SLOT_WIDTH - BAR_GAP_PIXELS, -barHeight)
 
       const localPriceTime = utcToZonedTime(price.start, TZ)
@@ -104,7 +104,7 @@ function renderCurrentPrice(ctx: CanvasRenderingContext2D, currentPrice: SpotPri
   ctx.fillText('c/kWh', GRAPH_WIDTH_PIXELS + 6, 80)
   renderRightAdjustedText(ctx, format(new Date(), 'HH:mm'), DISPLAY_WIDTH - 4, DISPLAY_HEIGHT - 4)
 
-  const currentPriceStr = currentPrice ? (currentPrice.price / 10).toFixed(1) : 'N/A'
+  const currentPriceStr = currentPrice ? (retailPrice(currentPrice) / 10).toFixed(1) : 'N/A'
   ctx.font = currentPriceStr.length > 3 ? '42px Roboto700' : '56px Roboto700'
   ctx.fillText(currentPriceStr, GRAPH_WIDTH_PIXELS + 6, 60)
 }
@@ -123,6 +123,10 @@ function getRenderedPrices(prices: SpotPrice[], startOfCurrentHour: Date) {
   return range(HOUR_COUNT)
     .map(i => priceForDate(prices, addHours(startOfCurrentHour, i)))
     .filter(identity) as SpotPrice[]
+}
+
+function retailPrice(spotPrice: SpotPrice) {
+  return 1.24 * spotPrice.price + 3 // 24% VAT + 3 EUR/MWh commission
 }
 
 function priceForDate(prices: SpotPrice[], date: Date) {
