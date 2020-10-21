@@ -65,13 +65,13 @@ export function applyScene(sceneId: string) {
 
 function postJson(url: string, json: {}) {
   const start = new Date()
-  console.log(`POSTing: ${JSON.stringify(json)}`)
+  // console.log(`POSTing: ${JSON.stringify(json)}`)
 
   fetch(url, {
     method: 'POST',
     body: JSON.stringify(json),
     headers: { 'Content-Type': 'application/json' },
   })
-    .then(res => console.log(`Done in ${new Date().getTime() - start.getTime()}ms. Response: ${res.status}`))
+    // .then(res => console.log(`Done in ${new Date().getTime() - start.getTime()}ms. Response: ${res.status}`))
     .catch(e => console.error('Error while POSTing:', e))
 }

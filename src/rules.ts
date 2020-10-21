@@ -76,13 +76,13 @@ function setupPirLights(pirEvents: PirEventStream, onHandler: () => void, offHan
   pirEvents
     .filter(e => e.motionDetected)
     .debounceImmediate(PIR_TURN_ON_DEBOUNCE_MS)
-    .doAction(e => console.log(`ON: ${JSON.stringify(e)}`))
+    // .doAction(e => console.log(`ON: ${JSON.stringify(e)}`))
     .onValue(onHandler)
 
   pirEvents
     .filter(e => e.motionDetected)
     .flatMapLatest(e => later(PIR_TURN_OFF_DELAY_MS, e))
-    .doAction(e => console.log(`OFF: ${JSON.stringify(e)}`))
+    // .doAction(e => console.log(`OFF: ${JSON.stringify(e)}`))
     .onValue(offHandler)
 }
 
