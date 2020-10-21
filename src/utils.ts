@@ -48,6 +48,9 @@ function sendCompressedDataToDisplay(ipv6Destination: string, uncompressed: Buff
   const payload = gzipSync(uncompressed)
   console.log(`Sending ${payload.length} bytes to ${url}`)
   return Coap.postOctetStream(parse(url), payload, true)
+    .catch(e => {
+      console.log(`Error while sending ${payload.length} bytes to ${url}`, e)
+    })
 }
 
 export function getRandomInt(max: number) {
