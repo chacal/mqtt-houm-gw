@@ -40,7 +40,7 @@ function main() {
   const outsideTempEvents = environmentEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
 
   Coap.updateTiming({
-    ackTimeout: 30  // Use 30s ack timeout
+    ackTimeout: 12  // Use 12s ack timeout
   })
 
   setupUpstairsToilet(sensorEvents)
