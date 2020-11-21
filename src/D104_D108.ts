@@ -23,7 +23,8 @@ const MAX_RANDOM_RENDER_DELAY_MS = 30000
 
 const HOUR_COUNT = 24
 const BAR_GAP_PIXELS = 2
-const GRAPH_MAX_PRICE = 120
+const GRAPH_MAX_PRICE = 200
+const GRAPH_START_PRICE = 50
 const GRAPH_HEIGHT_PIXELS = 110
 const GRAPH_WIDTH_PIXELS = 200
 const SLOT_WIDTH = Math.floor(GRAPH_WIDTH_PIXELS / HOUR_COUNT)
@@ -78,8 +79,8 @@ export function render(vcc: number, instance: string, rssi: number, prices: Spot
   renderPriceBars(ctx, renderedPrices)
   renderCurrentPrice(ctx, priceForDate(renderedPrices, startOfCurrentHour))
 
-  renderDividerAtPrice(ctx, 50)
   renderDividerAtPrice(ctx, 100)
+  renderDividerAtPrice(ctx, 150)
 
   return ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT)
 }
@@ -89,7 +90,7 @@ function renderPriceBars(ctx: CanvasRenderingContext2D, prices: SpotPrice[]) {
 
   prices
     .forEach((price, i) => {
-      const barHeight = (retailPrice(price) / GRAPH_MAX_PRICE) * GRAPH_HEIGHT_PIXELS
+      const barHeight = ((retailPrice(price) - GRAPH_START_PRICE) / (GRAPH_MAX_PRICE - GRAPH_START_PRICE)) * GRAPH_HEIGHT_PIXELS
       ctx.fillRect(GRAPH_MARGIN + i * SLOT_WIDTH, GRAPH_HEIGHT_PIXELS, SLOT_WIDTH - BAR_GAP_PIXELS, -barHeight)
 
       const localPriceTime = utcToZonedTime(price.start, TZ)
@@ -113,7 +114,7 @@ function renderDividerAtPrice(ctx: CanvasRenderingContext2D, price: number) {
   ctx.strokeStyle = '#000000'
   ctx.beginPath()
   ctx.setLineDash([5, 3])
-  const lineY = Math.round(GRAPH_HEIGHT_PIXELS - price * GRAPH_HEIGHT_PIXELS / GRAPH_MAX_PRICE)
+  const lineY = Math.round(GRAPH_HEIGHT_PIXELS - (price - GRAPH_START_PRICE) * GRAPH_HEIGHT_PIXELS / (GRAPH_MAX_PRICE - GRAPH_START_PRICE))
   ctx.moveTo(GRAPH_MARGIN, lineY)
   ctx.lineTo(GRAPH_WIDTH_PIXELS - GRAPH_MARGIN, lineY)
   ctx.stroke()
@@ -126,7 +127,8 @@ function getRenderedPrices(prices: SpotPrice[], startOfCurrentHour: Date) {
 }
 
 function retailPrice(spotPrice: SpotPrice) {
-  return 1.24 * spotPrice.price + 3 // 24% VAT + 3 EUR/MWh commission
+  // 24% VAT + 3 EUR/MWh commission + 3.14 c/kWh transfer + 2,79372 c/kWh electricity tax
+  return 1.24 * spotPrice.price + 3 + 31.4 + 27.9372
 }
 
 function priceForDate(prices: SpotPrice[], date: Date) {
