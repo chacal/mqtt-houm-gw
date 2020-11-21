@@ -2,7 +2,7 @@
 FROM node:14-slim AS builder
 WORKDIR /opt/app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . .
@@ -16,7 +16,7 @@ ENV NODE_ENV=production
 ENV TZ="Europe/Helsinki"
 WORKDIR /opt/app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN npm install
 
 COPY --from=builder /opt/app/built/src .
