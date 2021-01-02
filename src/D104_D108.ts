@@ -10,7 +10,7 @@ import { format, utcToZonedTime } from 'date-fns-tz'
 import { CronJob } from 'cron'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
-const D104_ADDRESS = 'fddd:eeee:ffff:0061:4579:2df8:83c4:88fa'
+const D104_ADDRESS = 'fddd:eeee:ffff:0061:4e11:5d19:7b5a:a5ee'
 const D108_ADDRESS = 'fddd:eeee:ffff:0061:eb89:0d6b:5f92:c7d2'
 const REAL_DISPLAY_WIDTH = 128
 const REAL_DISPLAY_HEIGHT = 296
