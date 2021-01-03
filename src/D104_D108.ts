@@ -11,7 +11,7 @@ import { CronJob } from 'cron'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
 const D104_ADDRESS = 'fddd:eeee:ffff:0061:4e11:5d19:7b5a:a5ee'
-const D108_ADDRESS = 'fddd:eeee:ffff:0061:eb89:0d6b:5f92:c7d2'
+const D108_ADDRESS = 'fddd:eeee:ffff:0061:d698:601f:f4a6:f5e3'
 const REAL_DISPLAY_WIDTH = 128
 const REAL_DISPLAY_HEIGHT = 296
 const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
