@@ -16,7 +16,7 @@ import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
 import { getContext, renderCenteredText } from '@chacal/canvas-render-utils'
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
-const D107_ADDRESS = 'fddd:eeee:ffff:0061:bc64:d945:2096:8f1e'
+const D107_ADDRESS = 'fddd:eeee:ffff:61:c2ca:606:2c7f:feac'
 const REAL_DISPLAY_WIDTH = 128
 const REAL_DISPLAY_HEIGHT = 296
 const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
@@ -29,7 +29,7 @@ const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)
 
 
 export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
-  const statuses = NetworkDisplay.statusesWithInterval(D107_ADDRESS, VCC_POLLING_INTERVAL_MS)
+  const statuses = NetworkDisplay.statusesWithInterval(D107_ADDRESS, VCC_POLLING_INTERVAL_MS, '/api/state')
   const environments = environmentsWithInterval(Duration.ofMillis(TEMP_UPDATE_INTERVAL_MS), environmentEvents)
   const forecasts = cityForecastsWithInterval('espoo', FORECAST_UPDATE_INTERVAL_MS)
   const combined = combineTemplate({
