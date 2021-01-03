@@ -39,7 +39,7 @@ export default function setupNetworkDisplay(displayStatusCb: (s: IThreadDisplayS
 }
 
 function setupPriceDisplay(prices: EventStream<SpotPrice[]>, displayAddress: string, displayStatusCb: (s: IThreadDisplayStatus) => void) {
-  const statuses = NetworkDisplay.statusesWithInterval(displayAddress, VCC_POLLING_INTERVAL_MS())
+  const statuses = NetworkDisplay.statusesWithInterval(displayAddress, VCC_POLLING_INTERVAL_MS(), '/api/state')
   const combined = combineTemplate({
     status: statuses,
     prices
