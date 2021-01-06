@@ -3,17 +3,17 @@ import { Duration } from '@js-joda/core'
 import { Coap } from '@chacal/js-utils'
 import { parse } from 'url'
 import { gzipSync } from 'zlib'
-import { EnvironmentEventStream } from './index'
 import { ForecastItem } from './CityForecasts'
+import { EventStream } from 'baconjs'
 
 import { toBinaryImage, toBWRGrayScale } from '@chacal/canvas-render-utils'
 
 import '@js-joda/timezone'
 
-export function environmentsWithInterval(interval: Duration, environmentEvents: EnvironmentEventStream): EnvironmentEventStream {
-  return environmentEvents
+export function eventsWithInterval<T>(interval: Duration, sourceStream: EventStream<T>): EventStream<T> {
+  return sourceStream
     .first()
-    .merge(environmentEvents
+    .merge(sourceStream
       .toProperty()
       .sample(interval.toMillis())
     )

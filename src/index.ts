@@ -12,6 +12,7 @@ import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 
 export type EnvironmentEventStream = EventStream<IEnvironmentEvent>
+export type DisplayStatusStream = EventStream<IThreadDisplayStatus>
 
 const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtts://mqtt-home.chacal.fi'
 const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined
@@ -38,6 +39,7 @@ function main() {
     .filter(e => e !== null)
 
   const outsideTempEvents = environmentEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
+  const displayStatuses = displayStatusesFrom(sensorEvents)
 
   Coap.updateTiming({
     ackTimeout: 12  // Use 12s ack timeout
@@ -46,20 +48,17 @@ function main() {
   setupUpstairsToilet(sensorEvents)
   setupDownstairsToilet(sensorEvents)
   setupStorage(sensorEvents)
-  setupD101(outsideTempEvents, publishThreadDisplayStatus)
-  setupD107(outsideTempEvents, publishThreadDisplayStatus)
-  setupD104_D108(publishThreadDisplayStatus)
+  setupD101(outsideTempEvents, displayStatuses)
+  setupD107(outsideTempEvents, displayStatuses)
+  setupD104_D108(displayStatuses)
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
-
-  function publishThreadDisplayStatus(status: IThreadDisplayStatus) {
-    mqttClient.publish(`/sensor/${status.instance}/${status.tag}/state`, JSON.stringify(status), {
-      retain: true,
-      qos: 1
-    })
-  }
 }
 
 function environmentEventsFrom(sensorEvents: EventStream<ISensorEvent>, instance: string) {
   return sensorEvents.filter(e => SensorEvents.isEnvironment(e) && e.instance === instance) as EnvironmentEventStream
+}
+
+function displayStatusesFrom(sensorEvents: EventStream<ISensorEvent>) {
+  return sensorEvents.filter(e => SensorEvents.isThreadDisplayStatus(e)) as DisplayStatusStream
 }

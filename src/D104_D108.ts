@@ -1,6 +1,5 @@
 import { combineTemplate, EventStream, fromBinder } from 'baconjs'
 import { identity, noop, range } from 'lodash'
-import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
 import { CanvasRenderingContext2D } from 'canvas'
 import { getRandomInt, sendBWRImageToDisplay } from './utils'
 import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
@@ -8,7 +7,7 @@ import { fetchNordPoolSpotPrices, SpotPrice } from 'pohjoisallas'
 import { addHours, getHours, isEqual, startOfHour } from 'date-fns'
 import { format, utcToZonedTime } from 'date-fns-tz'
 import { CronJob } from 'cron'
-import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
+import { DisplayStatusStream } from './index'
 
 const D104_ADDRESS = 'fddd:eeee:ffff:0061:4e11:5d19:7b5a:a5ee'
 const D108_ADDRESS = 'fddd:eeee:ffff:0061:d698:601f:f4a6:f5e3'
@@ -17,7 +16,6 @@ const REAL_DISPLAY_HEIGHT = 296
 const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
 const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
-const VCC_POLLING_INTERVAL_MS = () => 5 * 60000 + getRandomInt(20000)
 const RENDER_CRON_EXPRESSION = '0,30 * * * *'
 const MAX_RANDOM_RENDER_DELAY_MS = 30000
 
@@ -32,23 +30,21 @@ const GRAPH_MARGIN = (GRAPH_WIDTH_PIXELS - HOUR_COUNT * SLOT_WIDTH) / 2 + BAR_GA
 
 const TZ = 'Europe/Helsinki'
 
-export default function setupNetworkDisplay(displayStatusCb: (s: IThreadDisplayStatus) => void) {
+export default function setupNetworkDisplay(displayStatuses: DisplayStatusStream) {
   const prices = createPricesStream()
-  setupPriceDisplay(prices, D104_ADDRESS, displayStatusCb)
-  setupPriceDisplay(prices, D108_ADDRESS, displayStatusCb)
+  setupPriceDisplay(prices, D104_ADDRESS, displayStatuses.filter(s => s.instance === 'D104'))
+  setupPriceDisplay(prices, D108_ADDRESS, displayStatuses.filter(s => s.instance === 'D108'))
 }
 
-function setupPriceDisplay(prices: EventStream<SpotPrice[]>, displayAddress: string, displayStatusCb: (s: IThreadDisplayStatus) => void) {
-  const statuses = NetworkDisplay.statusesWithInterval(displayAddress, VCC_POLLING_INTERVAL_MS(), '/api/state')
+function setupPriceDisplay(prices: EventStream<SpotPrice[]>, displayAddress: string, displayStatuses: DisplayStatusStream) {
   const combined = combineTemplate({
-    status: statuses,
+    status: displayStatuses,
     prices
   })
 
-  statuses.onValue(displayStatusCb)
-
   combined
     .first()
+    .delay(getRandomInt(MAX_RANDOM_RENDER_DELAY_MS))
     .concat(combined.sampledBy(prices))
     .map(v => render(v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.prices))
     .onValue(imageData => setTimeout(() => sendBWRImageToDisplay(displayAddress, imageData), getRandomInt(MAX_RANDOM_RENDER_DELAY_MS)))

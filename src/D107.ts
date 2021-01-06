@@ -1,20 +1,12 @@
 import { combineTemplate, fromPromise } from 'baconjs'
-import { ChronoUnit, Duration, LocalTime } from '@js-joda/core'
+import { ChronoUnit, LocalTime } from '@js-joda/core'
 import { zip } from 'lodash'
-import { NetworkDisplay, SensorEvents } from '@chacal/js-utils'
 import { CanvasRenderingContext2D } from 'canvas'
 
-import { EnvironmentEventStream } from './index'
-import {
-  environmentsWithInterval,
-  getRandomInt,
-  paddedHoursFor,
-  renderImage,
-  sendBWRImageToDisplay
-} from './utils'
+import { DisplayStatusStream, EnvironmentEventStream } from './index'
+import { getRandomInt, paddedHoursFor, renderImage, sendBWRImageToDisplay } from './utils'
 import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
 import { getContext, renderCenteredText } from '@chacal/canvas-render-utils'
-import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 
 const D107_ADDRESS = 'fddd:eeee:ffff:61:c2ca:606:2c7f:feac'
 const REAL_DISPLAY_WIDTH = 128
@@ -22,26 +14,22 @@ const REAL_DISPLAY_HEIGHT = 296
 const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
 const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
-const TEMP_UPDATE_INTERVAL_MS = 60000
-const VCC_POLLING_INTERVAL_MS = 5 * 60000 + getRandomInt(20000)
 const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
-const RENDER_INTERVAL = 10 * 60000 + getRandomInt(20000)
+const RENDER_INTERVAL = 10 * 60000 + getRandomInt(30000)
 
 
-export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatusCb: (s: IThreadDisplayStatus) => void) {
-  const statuses = NetworkDisplay.statusesWithInterval(D107_ADDRESS, VCC_POLLING_INTERVAL_MS, '/api/state')
-  const environments = environmentsWithInterval(Duration.ofMillis(TEMP_UPDATE_INTERVAL_MS), environmentEvents)
+export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatuses: DisplayStatusStream) {
+  const d107Statuses = displayStatuses.filter(s => s.instance === 'D107')
   const forecasts = cityForecastsWithInterval('espoo', FORECAST_UPDATE_INTERVAL_MS)
   const combined = combineTemplate({
-    environmentEvent: environments,
-    status: statuses,
+    environmentEvent: environmentEvents,
+    status: d107Statuses,
     forecasts
   })
 
-  statuses.onValue(displayStatusCb)
-
   combined
     .first()
+    .delay(getRandomInt(30000))
     .concat(combined.sample(RENDER_INTERVAL))
     .flatMapLatest(v =>
       fromPromise(render(v.environmentEvent.temperature, v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.forecasts))
