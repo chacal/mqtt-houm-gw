@@ -18,7 +18,7 @@ const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtts:/
 const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD || undefined
 
-const OUTSIDE_TEMP_SENSOR_INSTANCE = 'S210'
+const OUTSIDE_TEMP_SENSOR_INSTANCE = 'S222'
 
 main()
 
