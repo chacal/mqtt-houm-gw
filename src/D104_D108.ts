@@ -1,13 +1,12 @@
-import { combineTemplate, EventStream, fromBinder } from 'baconjs'
-import { identity, noop, range } from 'lodash'
+import { combineTemplate, EventStream } from 'baconjs'
 import { CanvasRenderingContext2D } from 'canvas'
 import { getRandomInt, sendBWRImageToDisplay } from './utils'
 import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
-import { fetchNordPoolSpotPrices, SpotPrice } from 'pohjoisallas'
-import { addHours, getHours, isEqual, startOfHour } from 'date-fns'
+import { SpotPrice } from 'pohjoisallas'
+import { getHours } from 'date-fns'
 import { format, utcToZonedTime } from 'date-fns-tz'
-import { CronJob } from 'cron'
 import { DisplayStatusStream } from './index'
+import { createPricesStream, getCurrentPrice, getNPricesFromCurrentHourForward, retailPrice } from './ElectricityPrices'
 
 const D104_ADDRESS = 'fddd:eeee:ffff:0061:4e11:5d19:7b5a:a5ee'
 const D108_ADDRESS = 'fddd:eeee:ffff:0061:d698:601f:f4a6:f5e3'
@@ -16,7 +15,6 @@ const REAL_DISPLAY_HEIGHT = 296
 const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
 const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
-const RENDER_CRON_EXPRESSION = '0,30 * * * *'
 const MAX_RANDOM_RENDER_DELAY_MS = 30000
 
 const HOUR_COUNT = 24
@@ -50,30 +48,14 @@ function setupPriceDisplay(prices: EventStream<SpotPrice[]>, displayAddress: str
     .onValue(imageData => setTimeout(() => sendBWRImageToDisplay(displayAddress, imageData), getRandomInt(MAX_RANDOM_RENDER_DELAY_MS)))
 }
 
-function createPricesStream() {
-  return fromBinder<SpotPrice[]>(sink => {
-    const job = new CronJob(RENDER_CRON_EXPRESSION, fetchPrices, noop, true, 'UTC', null, true)
-    return () => {
-      job.stop()
-    }
-
-    function fetchPrices() {
-      fetchNordPoolSpotPrices()
-        .then(prices => sink(prices))
-    }
-  })
-}
-
-
 export function render(vcc: number, instance: string, rssi: number, prices: SpotPrice[]) {
   const ctx = getContext(REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT, true)
   ctx.antialias = 'default'
 
-  const startOfCurrentHour = startOfHour(utcToZonedTime(new Date(), TZ))
-  const renderedPrices = getRenderedPrices(prices, startOfCurrentHour)
+  const renderedPrices = getNPricesFromCurrentHourForward(prices, HOUR_COUNT)
 
   renderPriceBars(ctx, renderedPrices)
-  renderCurrentPrice(ctx, priceForDate(renderedPrices, startOfCurrentHour))
+  renderCurrentPrice(ctx, getCurrentPrice(renderedPrices))
 
   renderDividerAtPrice(ctx, 100)
   renderDividerAtPrice(ctx, 150)
@@ -114,20 +96,5 @@ function renderDividerAtPrice(ctx: CanvasRenderingContext2D, price: number) {
   ctx.moveTo(GRAPH_MARGIN, lineY)
   ctx.lineTo(GRAPH_WIDTH_PIXELS - GRAPH_MARGIN, lineY)
   ctx.stroke()
-}
-
-function getRenderedPrices(prices: SpotPrice[], startOfCurrentHour: Date) {
-  return range(HOUR_COUNT)
-    .map(i => priceForDate(prices, addHours(startOfCurrentHour, i)))
-    .filter(identity) as SpotPrice[]
-}
-
-function retailPrice(spotPrice: SpotPrice) {
-  // 24% VAT + 3 EUR/MWh commission + 3.14 c/kWh transfer + 2,79372 c/kWh electricity tax
-  return 1.24 * spotPrice.price + 3 + 31.4 + 27.9372
-}
-
-function priceForDate(prices: SpotPrice[], date: Date) {
-  return prices.find(p => isEqual(p.start, date))
 }
 
