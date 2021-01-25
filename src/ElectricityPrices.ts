@@ -8,7 +8,7 @@ import { utcToZonedTime } from 'date-fns-tz'
 const PRICE_FETCH_CRON_EXPRESSION = '0,30 * * * *'
 const TZ = 'Europe/Helsinki'
 
-export function createPricesStream() {
+export function createElectricityPricesStream() {
   return fromBinder<SpotPrice[]>(sink => {
     const job = new CronJob(PRICE_FETCH_CRON_EXPRESSION, fetchPrices, noop, true, 'UTC', null, true)
     return () => {

@@ -7,6 +7,7 @@ import setupD104_D108 from './D104_D108'
 import setupImpulseListener from './ImpulseListener'
 import setupCarHeaterAPI from './CarHeaterAPI'
 import { connectHoumWs } from './houm'
+import { createElectricityPricesStream } from './ElectricityPrices'
 import ISensorEvent = SensorEvents.ISensorEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
@@ -40,6 +41,8 @@ function main() {
 
   const outsideTempEvents = environmentEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
   const displayStatuses = displayStatusesFrom(sensorEvents)
+  const electricityPrices = createElectricityPricesStream()
+
 
   Coap.updateTiming({
     ackTimeout: 12  // Use 12s ack timeout
@@ -50,7 +53,7 @@ function main() {
   setupStorage(sensorEvents)
   setupD101(outsideTempEvents, displayStatuses)
   setupD107(outsideTempEvents, displayStatuses)
-  setupD104_D108(displayStatuses)
+  setupD104_D108(displayStatuses, electricityPrices)
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
 }

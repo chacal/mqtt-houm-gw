@@ -6,7 +6,7 @@ import { SpotPrice } from 'pohjoisallas'
 import { getHours } from 'date-fns'
 import { format, utcToZonedTime } from 'date-fns-tz'
 import { DisplayStatusStream } from './index'
-import { createPricesStream, getCurrentPrice, getNPricesFromCurrentHourForward, retailPrice } from './ElectricityPrices'
+import { getCurrentPrice, getNPricesFromCurrentHourForward, retailPrice } from './ElectricityPrices'
 
 const D104_ADDRESS = 'fddd:eeee:ffff:0061:4e11:5d19:7b5a:a5ee'
 const D108_ADDRESS = 'fddd:eeee:ffff:0061:d698:601f:f4a6:f5e3'
@@ -28,10 +28,9 @@ const GRAPH_MARGIN = (GRAPH_WIDTH_PIXELS - HOUR_COUNT * SLOT_WIDTH) / 2 + BAR_GA
 
 const TZ = 'Europe/Helsinki'
 
-export default function setupNetworkDisplay(displayStatuses: DisplayStatusStream) {
-  const prices = createPricesStream()
-  setupPriceDisplay(prices, D104_ADDRESS, displayStatuses.filter(s => s.instance === 'D104'))
-  setupPriceDisplay(prices, D108_ADDRESS, displayStatuses.filter(s => s.instance === 'D108'))
+export default function setupNetworkDisplay(displayStatuses: DisplayStatusStream, electricityPrices: EventStream<SpotPrice[]>) {
+  setupPriceDisplay(electricityPrices, D104_ADDRESS, displayStatuses.filter(s => s.instance === 'D104'))
+  setupPriceDisplay(electricityPrices, D108_ADDRESS, displayStatuses.filter(s => s.instance === 'D108'))
 }
 
 function setupPriceDisplay(prices: EventStream<SpotPrice[]>, displayAddress: string, displayStatuses: DisplayStatusStream) {
