@@ -1,4 +1,4 @@
-import { getRandomInt, sendImageToDisplay, } from './utils'
+import { getRandomInt, sendBWRImageToDisplay, } from './utils'
 import { DisplayStatusStream, EnvironmentEventStream } from './index'
 import { SensorEvents } from '@chacal/js-utils'
 import { ChronoUnit, LocalTime } from '@js-joda/core'
@@ -10,8 +10,10 @@ const RENDER_INTERVAL = 10 * 60000 + getRandomInt(30000)
 const MAX_RENDERED_TEMPERATURE_AGE_S = 5 * 60  // Don't render temperatures older than 3 minutes
 
 const D101_ADDRESS = 'fddd:eeee:ffff:61:949c:bb75:bc24:c0ed'
-const DISPLAY_WIDTH = 296
-const DISPLAY_HEIGHT = 128
+const REAL_DISPLAY_WIDTH = 128
+const REAL_DISPLAY_HEIGHT = 296
+const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
+const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
 export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatuses: DisplayStatusStream) {
   const d101Statuses = displayStatuses.filter(s => s.instance === 'D101')
@@ -26,7 +28,7 @@ export default function setupNetworkDisplay(environmentEvents: EnvironmentEventS
     .delay(getRandomInt(30000))
     .concat(combined.sample(RENDER_INTERVAL))
     .map(v => render(v.environmentEvent, v.status.vcc))
-    .onValue(imageData => sendImageToDisplay(D101_ADDRESS, imageData))
+    .onValue(imageData => sendBWRImageToDisplay(D101_ADDRESS, imageData))
 }
 
 export function render(temperature: IEnvironmentEvent, vcc: number) {
@@ -34,11 +36,11 @@ export function render(temperature: IEnvironmentEvent, vcc: number) {
   const temperatureStr = sSinceTemperatureEvent < MAX_RENDERED_TEMPERATURE_AGE_S ?
     temperature.temperature.toFixed(1) + '°C' : 'N/A'
 
-  const ctx = getContext(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+  const ctx = getContext(REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT, true)
   ctx.antialias = 'default'
-  ctx.font = '70px OpenSans700'
+  ctx.font = '80px OpenSans700'
 
-  renderCenteredText(ctx, temperatureStr, DISPLAY_WIDTH / 2, 88)
+  renderCenteredText(ctx, temperatureStr, DISPLAY_WIDTH / 2, 92)
 
   ctx.font = '20px Roboto700'
   renderRightAdjustedText(ctx, 'Outside', DISPLAY_WIDTH - 2, 18)
@@ -47,5 +49,5 @@ export function render(temperature: IEnvironmentEvent, vcc: number) {
   const voltageStr = `${(vcc / 1000).toFixed(3)}V`
   renderCenteredText(ctx, voltageStr, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - 2)
 
-  return ctx.getImageData(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
+  return ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT)
 }
