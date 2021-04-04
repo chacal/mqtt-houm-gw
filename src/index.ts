@@ -5,6 +5,7 @@ import setupD101 from './D101'
 import setupD107 from './D107'
 import setupD104_D108 from './D104_D108'
 import setupD109 from './D109'
+import setupD110 from './D110'
 import setupImpulseListener from './ImpulseListener'
 import setupCarHeaterAPI from './CarHeaterAPI'
 import { connectHoumWs } from './houm'
@@ -56,6 +57,7 @@ function main() {
   setupD107(outsideTempEvents, displayStatuses)
   setupD104_D108(displayStatuses, electricityPrices)
   setupD109(displayStatuses, electricityPrices, outsideTempEvents)
+  setupD110(outsideTempEvents, displayStatuses)
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
 }
