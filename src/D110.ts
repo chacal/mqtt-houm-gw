@@ -2,7 +2,7 @@ import { fromPromise, interval, once } from 'baconjs'
 import { getRandomInt, sendBWRImageToDisplay } from './utils'
 import { getContext, renderCenteredText } from '@chacal/canvas-render-utils'
 import { getStopArrivals, HslArrival } from './HslTimetables'
-import { differenceInMinutes, format, getMinutes, isAfter, isBefore, parse, startOfMinute } from 'date-fns'
+import { differenceInMinutes, format, getMinutes, isAfter, isBefore, isWeekend, parse, startOfMinute } from 'date-fns'
 import { zonedTimeToUtc } from 'date-fns-tz'
 
 const D110_ADDRESS = 'fddd:eeee:ffff:61:43a2:7c55:f229:85ef'
@@ -61,7 +61,7 @@ function renderArrival(ctx: CanvasRenderingContext2D, arr: HslArrival, now: Date
 function isInFastRenderingPeriod(ts: Date) {
   const fastRenderStart = zonedTimeToUtc(parse(FAST_RENDER_START_TIME, 'HH:mm', new Date()), TZ)
   const fastRenderEnd = zonedTimeToUtc(parse(FAST_RENDER_END_TIME, 'HH:mm', new Date()), TZ)
-  return isBefore(fastRenderStart, ts) && isAfter(fastRenderEnd, ts)
+  return isAfter(ts, fastRenderStart) && isBefore(ts, fastRenderEnd) && !isWeekend(ts)
 }
 
 function shouldRender() {
