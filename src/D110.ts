@@ -1,81 +1,76 @@
-import { combineTemplate, fromPromise } from 'baconjs'
-import { ChronoUnit, LocalTime } from '@js-joda/core'
-import { zip } from 'lodash'
-import { CanvasRenderingContext2D } from 'canvas'
-
-import { DisplayStatusStream, EnvironmentEventStream } from './index'
-import { getRandomInt, paddedHoursFor, renderImage, sendBWRImageToDisplay } from './utils'
-import { cityForecastsWithInterval, ForecastItem } from './CityForecasts'
+import { fromPromise, interval, once } from 'baconjs'
+import { getRandomInt, sendBWRImageToDisplay } from './utils'
 import { getContext, renderCenteredText } from '@chacal/canvas-render-utils'
+import { getStopArrivals, HslArrival } from './HslTimetables'
+import { differenceInMinutes, format, getMinutes, isAfter, isBefore, parse, startOfMinute } from 'date-fns'
+import { zonedTimeToUtc } from 'date-fns-tz'
 
 const D110_ADDRESS = 'fddd:eeee:ffff:61:43a2:7c55:f229:85ef'
 const REAL_DISPLAY_WIDTH = 128
 const REAL_DISPLAY_HEIGHT = 296
-const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
-const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
-const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
-const RENDER_INTERVAL = 10 * 60000 + getRandomInt(30000)
+const RASTASKUKKULA_STOP_ID = 'HSL:2133219'
+const FAST_RENDER_START_TIME = '7:15'
+const FAST_RENDER_END_TIME = '9:15'
+const TZ = 'Europe/Helsinki'
 
 
-export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatuses: DisplayStatusStream) {
-  const d110Statuses = displayStatuses.filter(s => s.instance === 'D110')
-  const forecasts = cityForecastsWithInterval('espoo', FORECAST_UPDATE_INTERVAL_MS)
-  const combined = combineTemplate({
-    environmentEvent: environmentEvents,
-    status: d110Statuses,
-    forecasts
-  })
-
-  combined
-    .first()
+export default function setupNetworkDisplay() {
+  once('')
     .delay(getRandomInt(30000))
-    .concat(combined.sample(RENDER_INTERVAL))
-    .flatMapLatest(v =>
-      fromPromise(render(v.environmentEvent.temperature, v.status.vcc, v.status.instance, v.status.parent.latestRssi, v.forecasts))
-    )
+    .concat(interval(60000, ''))
+    .filter(shouldRender)
+    .flatMapLatest(() => fromPromise(getStopArrivals(RASTASKUKKULA_STOP_ID)))
+    .map(arrivals => render(arrivals))
     .onValue(imageData => sendBWRImageToDisplay(D110_ADDRESS, imageData))
 }
 
-export function render(temperature: number, vcc: number, instance: string, rssi: number, forecasts: ForecastItem[]) {
-  const ctx = getContext(REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT, true)
+
+export function render(arrivals: HslArrival[]) {
+  const ctx = getContext(REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT, false)
   ctx.antialias = 'default'
-  renderTemperature(ctx, temperature)
-  renderStatusFields(ctx, vcc, instance, rssi)
-  return renderForecasts(ctx, forecasts)
-}
+  ctx.font = '23px Roboto700'
 
-function renderTemperature(ctx: CanvasRenderingContext2D, temperature: number) {
-  ctx.font = '42px OpenSans700'
-  renderCenteredText(ctx, temperature.toFixed(1) + '°C', DISPLAY_WIDTH / 2, 32)
-}
+  let y = 30
+  const x = 4
+  const now = new Date()
 
-function renderStatusFields(ctx: CanvasRenderingContext2D, vcc: number, instance: string, rssi: number) {
-  ctx.font = '16px Roboto700'
-  ctx.fillText(LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), 2, 14)
-}
+  arrivals.forEach(arr => {
+    renderArrival(ctx, arr, now, x, y)
+    y += 33
+  })
 
-function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[]) {
-  const forecastColumnXCoords = [30, 110, 190, 266]
-
-  return Promise.all(
-    zip(forecastColumnXCoords, forecasts)
-      .map(([x, forecast]: [number, ForecastItem]) => renderForecast(ctx, x, forecast))
-  )
-    .then(() => ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT))
-}
-
-function renderForecast(ctx: CanvasRenderingContext2D, x: number, forecast: ForecastItem) {
   ctx.font = '20px Roboto700'
-  renderCenteredText(ctx, Math.round(forecast.temperature) + '°C', x, 106)
+  renderCenteredText(ctx, format(now, 'HH:mm'), REAL_DISPLAY_WIDTH / 2, REAL_DISPLAY_HEIGHT - 6)
 
-  ctx.font = '15px Roboto700'
-  renderCenteredText(ctx, paddedHoursFor(forecast), x, 48)
-  ctx.font = '17px Roboto700'
-  renderCenteredText(ctx, forecast.precipitation.toFixed(1), x, 125)
-
-  // Render symbol twice with 'multiply' composite to make it appear darker on 4-gray display
-  ctx.globalCompositeOperation = 'multiply'
-  return renderImage(ctx, forecast.symbolSvg, x - 24, 40, 50, 50)
-    .then(() => renderImage(ctx, forecast.symbolSvg, x - 24, 40, 50, 50))
+  return ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT)
 }
+
+function renderArrival(ctx: CanvasRenderingContext2D, arr: HslArrival, now: Date, x: number, y: number) {
+  const ts = startOfMinute(arr.arriveTs)
+  const realtimeMarker = arr.realtime && arr.realtimeState === 'UPDATED' ? '°' : ''
+
+  if (differenceInMinutes(ts, now) < 10 && isInFastRenderingPeriod(now)) {
+    ctx.fillText(`${Math.max(0, differenceInMinutes(ts, now))} min${realtimeMarker}`, x, y)
+  } else {
+    ctx.fillText(format(startOfMinute(arr.arriveTs), `HH:mm${realtimeMarker}`), x, y)
+  }
+  ctx.fillText(arr.route, x + 79, y)
+}
+
+function isInFastRenderingPeriod(ts: Date) {
+  const fastRenderStart = zonedTimeToUtc(parse(FAST_RENDER_START_TIME, 'HH:mm', new Date()), TZ)
+  const fastRenderEnd = zonedTimeToUtc(parse(FAST_RENDER_END_TIME, 'HH:mm', new Date()), TZ)
+  return isBefore(fastRenderStart, ts) && isAfter(fastRenderEnd, ts)
+}
+
+function shouldRender() {
+  const now = new Date()
+  // Don't skip rendering during fast render period
+  if (isInFastRenderingPeriod(now)) {
+    return true
+  } else { // Render every 10 minutes outside the fast render period
+    return getMinutes(now) % 10 === 0
+  }
+}
+

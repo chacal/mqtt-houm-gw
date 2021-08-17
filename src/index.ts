@@ -57,7 +57,7 @@ function main() {
   setupD107(outsideTempEvents, displayStatuses)
   setupD104_D108(displayStatuses, electricityPrices)
   setupD109(displayStatuses, electricityPrices, outsideTempEvents)
-  setupD110(outsideTempEvents, displayStatuses)
+  setupD110()
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
 }
