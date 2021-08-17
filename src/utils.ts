@@ -20,7 +20,7 @@ export function eventsWithInterval<T>(interval: Duration, sourceStream: EventStr
 }
 
 export function renderImage(ctx: CanvasRenderingContext2D, img: Buffer, x: number, y: number, w: number, h: number) {
-  return new Promise<ImageData>((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     const image = new Image()
     image.onload = () => {
       ctx.drawImage(image, x, y, w, h)
