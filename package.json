@@ -17,7 +17,7 @@
     "@material-ui/core": "^4.11.0",
     "@material-ui/pickers": "^3.2.10",
     "baconjs": "^3.0.15",
-    "canvas": "^2.6.1",
+    "canvas": "^2.8.0",
     "coap": "^0.24.0",
     "cron": "^1.8.2",
     "date-fns": "^2.16.1",
