@@ -1,5 +1,5 @@
 # Builder container
-FROM node:14-slim AS builder
+FROM node:16-slim AS builder
 WORKDIR /opt/app
 
 COPY package.json package-lock.json ./
@@ -11,7 +11,7 @@ RUN npx webpack -p
 
 
 # Build prod container
-FROM node:14-slim
+FROM node:16-slim
 ENV NODE_ENV=production
 ENV TZ="Europe/Helsinki"
 WORKDIR /opt/app
