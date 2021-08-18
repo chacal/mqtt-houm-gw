@@ -28,7 +28,6 @@ query Arrivals($stopId: String!){
 `
 
 export function getStopArrivals(stopId: string) {
-  console.log('Getting arrivals', stopId)
   const client = new GraphQLClient('https://api.digitransit.fi/routing/v1/routers/hsl/index/graphql')
   return client.request(stopArrivalsQuery, { stopId })
     .then(parseHslStopResponse)
