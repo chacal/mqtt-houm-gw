@@ -2,17 +2,13 @@ import { fromPromise, interval, once } from 'baconjs'
 import { getRandomInt, sendBWRImageToDisplay } from './utils'
 import { getContext, renderCenteredText } from '@chacal/canvas-render-utils'
 import { getStopArrivals, HslArrival } from './HslTimetables'
-import { differenceInMinutes, format, getMinutes, isAfter, isBefore, isWeekend, parse, startOfMinute } from 'date-fns'
-import { zonedTimeToUtc } from 'date-fns-tz'
+import { differenceInMinutes, format, getMinutes, startOfMinute } from 'date-fns'
 
 const D110_ADDRESS = 'fddd:eeee:ffff:61:43a2:7c55:f229:85ef'
 const REAL_DISPLAY_WIDTH = 128
 const REAL_DISPLAY_HEIGHT = 296
 
 const RASTASKUKKULA_STOP_ID = 'HSL:2133219'
-const FAST_RENDER_START_TIME = '7:15'
-const FAST_RENDER_END_TIME = '9:15'
-const TZ = 'Europe/Helsinki'
 
 
 export default function setupNetworkDisplay() {
@@ -59,9 +55,7 @@ function renderArrival(ctx: CanvasRenderingContext2D, arr: HslArrival, now: Date
 }
 
 function isInFastRenderingPeriod(ts: Date) {
-  const fastRenderStart = zonedTimeToUtc(parse(FAST_RENDER_START_TIME, 'HH:mm', new Date()), TZ)
-  const fastRenderEnd = zonedTimeToUtc(parse(FAST_RENDER_END_TIME, 'HH:mm', new Date()), TZ)
-  return isAfter(ts, fastRenderStart) && isBefore(ts, fastRenderEnd) && !isWeekend(ts)
+  return false
 }
 
 function shouldRender() {
