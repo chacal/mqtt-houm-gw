@@ -6,8 +6,8 @@ import { combineTemplate } from 'baconjs'
 import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 
-const RENDER_INTERVAL = 10 * 60000 + getRandomInt(30000)
-const MAX_RENDERED_TEMPERATURE_AGE_S = 5 * 60  // Don't render temperatures older than 3 minutes
+const RENDER_INTERVAL = 30 * 60000 + getRandomInt(30000)
+const MAX_RENDERED_TEMPERATURE_AGE_S = 5 * 60  // Don't render temperatures older than 5 minutes
 
 const D101_ADDRESS = 'fddd:eeee:ffff:61:949c:bb75:bc24:c0ed'
 const REAL_DISPLAY_WIDTH = 128

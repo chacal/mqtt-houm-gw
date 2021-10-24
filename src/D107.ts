@@ -15,7 +15,7 @@ const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
 const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
 const FORECAST_UPDATE_INTERVAL_MS = 15 * 60000
-const RENDER_INTERVAL = 10 * 60000 + getRandomInt(30000)
+const RENDER_INTERVAL = 30 * 60000 + getRandomInt(30000)
 
 
 export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatuses: DisplayStatusStream) {
