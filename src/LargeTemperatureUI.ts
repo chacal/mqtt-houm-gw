@@ -6,32 +6,36 @@ import { combineTemplate } from 'baconjs'
 import { getContext, renderCenteredText, renderRightAdjustedText } from '@chacal/canvas-render-utils'
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 
-const RENDER_INTERVAL = 30 * 60000 + getRandomInt(30000)
 const MAX_RENDERED_TEMPERATURE_AGE_S = 5 * 60  // Don't render temperatures older than 5 minutes
 
-const D101_ADDRESS = 'fddd:eeee:ffff:61:949c:bb75:bc24:c0ed'
 const REAL_DISPLAY_WIDTH = 128
 const REAL_DISPLAY_HEIGHT = 296
 const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
 const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
 
-export default function setupNetworkDisplay(environmentEvents: EnvironmentEventStream, displayStatuses: DisplayStatusStream) {
-  const d101Statuses = displayStatuses.filter(s => s.instance === 'D101')
+export default function setupNetworkDisplay(
+  instance: string,
+  name: string,
+  environmentEvents: EnvironmentEventStream,
+  displayStatuses: DisplayStatusStream,
+  address: string,
+  renderIntervalMinutes: number) {
+  const statuses = displayStatuses.filter(s => s.instance === instance)
 
   const combined = combineTemplate({
     environmentEvent: environmentEvents,
-    status: d101Statuses
+    status: statuses
   })
 
   combined
     .first()
     .delay(getRandomInt(30000))
-    .concat(combined.sample(RENDER_INTERVAL))
-    .map(v => render(v.environmentEvent, v.status.vcc))
-    .onValue(imageData => sendBWRImageToDisplay(D101_ADDRESS, imageData))
+    .concat(combined.sample(renderIntervalMinutes * 60000 + getRandomInt(30000)))
+    .map(v => render(v.environmentEvent, v.status.vcc, name))
+    .onValue(imageData => sendBWRImageToDisplay(address, imageData))
 }
 
-export function render(temperature: IEnvironmentEvent, vcc: number) {
+export function render(temperature: IEnvironmentEvent, vcc: number, name: string) {
   const sSinceTemperatureEvent = (new Date().getTime() - new Date(temperature.ts).getTime()) / 1000
   const temperatureStr = sSinceTemperatureEvent < MAX_RENDERED_TEMPERATURE_AGE_S ?
     temperature.temperature.toFixed(1) + '°C' : 'N/A'
@@ -43,7 +47,7 @@ export function render(temperature: IEnvironmentEvent, vcc: number) {
   renderCenteredText(ctx, temperatureStr, DISPLAY_WIDTH / 2, 92)
 
   ctx.font = '20px Roboto700'
-  renderRightAdjustedText(ctx, 'Outside', DISPLAY_WIDTH - 2, 18)
+  renderRightAdjustedText(ctx, name, DISPLAY_WIDTH - 2, 18)
   ctx.fillText(LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), 2, 18)
 
   const voltageStr = `${(vcc / 1000).toFixed(3)}V`

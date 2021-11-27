@@ -1,11 +1,10 @@
 import { Coap, Mqtt, SensorEvents } from '@chacal/js-utils'
 import { EventStream } from 'baconjs'
 import { setupDownstairsToilet, setupStorage, setupUpstairsToilet } from './rules'
-import setupD101 from './D101'
+import setupTemperatureDisplay from './LargeTemperatureUI'
 import setupD107 from './D107'
 import setupD104_D108 from './D104_D108'
 import setupD109 from './D109'
-import setupD110 from './D110'
 import setupImpulseListener from './ImpulseListener'
 import setupCarHeaterAPI from './CarHeaterAPI'
 import { connectHoumWs } from './houm'
@@ -17,10 +16,14 @@ import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 export type EnvironmentEventStream = EventStream<IEnvironmentEvent>
 export type DisplayStatusStream = EventStream<IThreadDisplayStatus>
 
+const D101_ADDRESS = 'fddd:eeee:ffff:61:949c:bb75:bc24:c0ed'
+const D110_ADDRESS = 'fddd:eeee:ffff:61:43a2:7c55:f229:85ef'
+
 const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtts://mqtt-home.chacal.fi'
 const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined
 const MQTT_PASSWORD = process.env.MQTT_PASSWORD || undefined
 
+const CAR_TEMP_SENSOR_INSTANCE = 'S215'
 const OUTSIDE_TEMP_SENSOR_INSTANCE = 'S222'
 
 main()
@@ -41,6 +44,7 @@ function main() {
     })
     .filter(e => e !== null)
 
+  const carTempEvents = environmentEventsFrom(sensorEvents, CAR_TEMP_SENSOR_INSTANCE)
   const outsideTempEvents = environmentEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
   const displayStatuses = displayStatusesFrom(sensorEvents)
   const electricityPrices = createElectricityPricesStream()
@@ -53,11 +57,11 @@ function main() {
   setupUpstairsToilet(sensorEvents)
   setupDownstairsToilet(sensorEvents)
   setupStorage(sensorEvents)
-  setupD101(outsideTempEvents, displayStatuses)
+  setupTemperatureDisplay('D101', 'Outside', outsideTempEvents, displayStatuses, D101_ADDRESS, 30)
+  setupTemperatureDisplay('D110', 'Car', carTempEvents, displayStatuses, D110_ADDRESS, 15)
   setupD107(outsideTempEvents, displayStatuses)
   setupD104_D108(displayStatuses, electricityPrices)
   setupD109(displayStatuses, electricityPrices, outsideTempEvents)
-  setupD110()
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
 }
