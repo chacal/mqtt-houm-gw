@@ -19,7 +19,7 @@ const MAX_RANDOM_RENDER_DELAY_MS = 30000
 
 const HOUR_COUNT = 24
 const BAR_GAP_PIXELS = 2
-const GRAPH_MAX_PRICE = 200
+const GRAPH_MAX_PRICE = 350
 const GRAPH_START_PRICE = 50
 const GRAPH_HEIGHT_PIXELS = 110
 const GRAPH_WIDTH_PIXELS = 200
@@ -57,7 +57,8 @@ export function render(vcc: number, instance: string, rssi: number, prices: Spot
   renderCurrentPrice(ctx, 60, getCurrentPrice(renderedPrices))
 
   renderDividerAtPrice(ctx, 100)
-  renderDividerAtPrice(ctx, 150)
+  renderDividerAtPrice(ctx, 200)
+  renderDividerAtPrice(ctx, 300)
 
   return ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT)
 }
@@ -79,12 +80,12 @@ export function renderPriceBars(ctx: CanvasRenderingContext2D, prices: SpotPrice
 
 export function renderCurrentPrice(ctx: CanvasRenderingContext2D, y: number, currentPrice: SpotPrice | undefined) {
   ctx.font = '18px Roboto700'
-  ctx.fillText('c/kWh', GRAPH_WIDTH_PIXELS + 6, y + 20)
+  ctx.fillText('c/kWh', GRAPH_WIDTH_PIXELS + 9, y + 20)
   renderRightAdjustedText(ctx, format(new Date(), 'HH:mm'), DISPLAY_WIDTH - 4, DISPLAY_HEIGHT - 4)
 
   const currentPriceStr = currentPrice ? (retailPrice(currentPrice) / 10).toFixed(1) : 'N/A'
   ctx.font = currentPriceStr.length > 3 ? '42px Roboto700' : '56px Roboto700'
-  ctx.fillText(currentPriceStr, GRAPH_WIDTH_PIXELS + 6, y)
+  ctx.fillText(currentPriceStr, GRAPH_WIDTH_PIXELS + 9, y)
 }
 
 export function renderDividerAtPrice(ctx: CanvasRenderingContext2D, price: number) {
@@ -95,5 +96,11 @@ export function renderDividerAtPrice(ctx: CanvasRenderingContext2D, price: numbe
   ctx.moveTo(GRAPH_MARGIN, lineY)
   ctx.lineTo(GRAPH_WIDTH_PIXELS - GRAPH_MARGIN, lineY)
   ctx.stroke()
+
+  ctx.save()
+  ctx.rotate(-Math.PI / 2)
+  ctx.font = '12px Roboto'
+  renderCenteredText(ctx, Math.round(price / 10).toString(), -lineY, GRAPH_WIDTH_PIXELS + 5)
+  ctx.restore()
 }
 
