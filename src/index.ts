@@ -17,7 +17,7 @@ export type EnvironmentEventStream = EventStream<IEnvironmentEvent>
 export type DisplayStatusStream = EventStream<IThreadDisplayStatus>
 
 const D101_ADDRESS = 'fddd:eeee:ffff:61:949c:bb75:bc24:c0ed'
-const D110_ADDRESS = 'fddd:eeee:ffff:61:43a2:7c55:f229:85ef'
+const D109_ADDRESS = 'fddd:eeee:ffff:61:ac7:f431:9a39:3895'
 
 const MQTT_BROKER = process.env.MQTT_BROKER ? process.env.MQTT_BROKER : 'mqtts://mqtt-home.chacal.fi'
 const MQTT_USERNAME = process.env.MQTT_USERNAME || undefined
@@ -58,7 +58,7 @@ function main() {
   setupDownstairsToilet(sensorEvents)
   setupStorage(sensorEvents)
   setupTemperatureDisplay('D101', 'Outside', outsideTempEvents, displayStatuses, D101_ADDRESS, 30)
-  setupTemperatureDisplay('D110', 'Car', carTempEvents, displayStatuses, D110_ADDRESS, 15)
+  setupTemperatureDisplay('D109', 'Car', carTempEvents, displayStatuses, D109_ADDRESS, 15)
   setupD107(outsideTempEvents, displayStatuses)
   setupD104_D108(displayStatuses, electricityPrices)
   setupD109(displayStatuses, electricityPrices, outsideTempEvents)
