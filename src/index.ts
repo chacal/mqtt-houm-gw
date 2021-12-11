@@ -8,12 +8,15 @@ import setupImpulseListener from './ImpulseListener'
 import setupCarHeaterAPI from './CarHeaterAPI'
 import { connectHoumWs } from './houm'
 import { createElectricityPricesStream } from './ElectricityPrices'
+import setupEnergyListener from './EnergyCalculator'
 import ISensorEvent = SensorEvents.ISensorEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
+import IImpulseEvent = SensorEvents.IImpulseEvent
 
 export type EnvironmentEventStream = EventStream<IEnvironmentEvent>
 export type DisplayStatusStream = EventStream<IThreadDisplayStatus>
+export type ImpulseStream = EventStream<IImpulseEvent>
 
 const D101_ADDRESS = 'fddd:eeee:ffff:61:949c:bb75:bc24:c0ed'
 const D109_ADDRESS = 'fddd:eeee:ffff:61:ac7:f431:9a39:3895'
@@ -62,6 +65,7 @@ function main() {
   setupD104_D108(displayStatuses, electricityPrices)
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
+  setupEnergyListener(sensorEvents, mqttClient)
 }
 
 function environmentEventsFrom(sensorEvents: EventStream<ISensorEvent>, instance: string) {
