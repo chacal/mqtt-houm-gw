@@ -13,6 +13,7 @@ import ISensorEvent = SensorEvents.ISensorEvent
 import IThreadDisplayStatus = SensorEvents.IThreadDisplayStatus
 import IEnvironmentEvent = SensorEvents.IEnvironmentEvent
 import IImpulseEvent = SensorEvents.IImpulseEvent
+import setupElectricityPricePublisher from './ElectricityPricePublisher'
 
 export type EnvironmentEventStream = EventStream<IEnvironmentEvent>
 export type DisplayStatusStream = EventStream<IThreadDisplayStatus>
@@ -66,6 +67,7 @@ function main() {
   setupImpulseListener(mqttClient)
   setupCarHeaterAPI()
   setupEnergyListener(sensorEvents, mqttClient)
+  setupElectricityPricePublisher(electricityPrices, mqttClient)
 }
 
 function environmentEventsFrom(sensorEvents: EventStream<ISensorEvent>, instance: string) {
