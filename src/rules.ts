@@ -36,8 +36,8 @@ export function setupDownstairsToilet(sensorEvents: SensorEventStream) {
   const INSTANCE4 = 'P307'
   const TAG = 'k'
 
-  const dayModeStart = () => LocalTime.of(7, 0)
-  const dayModeEnd = () => LocalTime.of(22, 30)
+  const dayModeStart = () => LocalTime.of(6, 15)
+  const dayModeEnd = () => LocalTime.of(23, 0)
   const isDayTime = () => LocalTime.now().isAfter(dayModeStart()) && LocalTime.now().isBefore(dayModeEnd())
 
   const pirEvents = recentEventsByInstanceAndTag(sensorEvents, INSTANCE1, TAG)
