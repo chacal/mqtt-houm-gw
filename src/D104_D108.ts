@@ -19,7 +19,7 @@ const MAX_RANDOM_RENDER_DELAY_MS = 30000
 
 const HOUR_COUNT = 24
 const BAR_GAP_PIXELS = 2
-const GRAPH_MAX_PRICE = 350
+const GRAPH_MAX_PRICE = 650
 const GRAPH_START_PRICE = 50
 const GRAPH_HEIGHT_PIXELS = 110
 const GRAPH_WIDTH_PIXELS = 200
@@ -59,6 +59,9 @@ export function render(vcc: number, instance: string, rssi: number, prices: Spot
   renderDividerAtPrice(ctx, 100)
   renderDividerAtPrice(ctx, 200)
   renderDividerAtPrice(ctx, 300)
+  renderDividerAtPrice(ctx, 400)
+  renderDividerAtPrice(ctx, 500)
+  renderDividerAtPrice(ctx, 600)
 
   return ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT)
 }
