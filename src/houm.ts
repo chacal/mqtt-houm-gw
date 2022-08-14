@@ -1,6 +1,4 @@
 import fetch from 'node-fetch'
-import { Bus } from 'baconjs'
-import io from 'socket.io-client'
 
 const HOUM_SITE_KEY = process.env.HOUM_SITE_KEY
 const HOUM_BASE_URL = `https://api.mountkelvin.com`
@@ -11,33 +9,6 @@ const HOUM_APPLY_SCENE_URL = HOUM_SITE_URL + '/applyScene'
 if (!HOUM_SITE_KEY) {
   console.error('HOUM site key missing! Set HOUM_SITE_KEY environment variable. Exiting..')
   process.exit()
-}
-
-const houmSiteBus = new Bus()
-
-interface SiteData {
-  siteKey: string,
-  data: {}
-}
-
-export function connectHoumWs() {
-  const socket = io.connect(HOUM_BASE_URL, {
-    reconnectionDelay: 1000,
-    reconnectionDelayMax: 3000,
-    transports: ['websocket'],
-  })
-
-  socket.on('connect', () => {
-    socket.emit('subscribe', { siteKey: HOUM_SITE_KEY })
-  })
-
-  socket.on('site', (data: SiteData) => {
-    houmSiteBus.push(data.data)
-  })
-}
-
-export function houmSiteStream() {
-  return houmSiteBus.changes()
 }
 
 export function turnOn(deviceId: string, brightness: number) {

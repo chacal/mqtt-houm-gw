@@ -5,8 +5,6 @@ import setupTemperatureDisplay from './LargeTemperatureUI'
 import setupD107 from './D107'
 import setupD104_D108 from './D104_D108'
 import setupImpulseListener from './ImpulseListener'
-import setupCarHeaterAPI from './CarHeaterAPI'
-import { connectHoumWs } from './houm'
 import { createElectricityPricesStream } from './ElectricityPrices'
 import setupEnergyListener from './EnergyCalculator'
 import ISensorEvent = SensorEvents.ISensorEvent
@@ -65,7 +63,6 @@ function main() {
   setupD107(outsideTempEvents, displayStatuses)
   setupD104_D108(displayStatuses, electricityPrices)
   setupImpulseListener(mqttClient)
-  setupCarHeaterAPI()
   setupEnergyListener(sensorEvents, mqttClient)
   setupElectricityPricePublisher(electricityPrices, mqttClient)
 }
