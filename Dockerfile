@@ -7,7 +7,6 @@ RUN npm install
 
 COPY . .
 RUN npx tsc
-RUN npx webpack -p
 
 
 # Build prod container
@@ -19,11 +18,10 @@ WORKDIR /opt/app
 COPY package.json package-lock.json ./
 RUN npm install
 
-COPY --from=builder /opt/app/built/src .
+COPY --from=builder /opt/app/built .
 
 CMD ["node", "./index.js"]
 
 USER node
 
 EXPOSE 5555/udp
-EXPOSE 4000/tcp
