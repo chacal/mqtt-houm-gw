@@ -32,7 +32,6 @@ main()
 function main() {
   const mqttClient = Mqtt.startMqttClient(MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD)
   mqttClient.subscribe('/sensor/+/+/state')
-  connectHoumWs()
 
   const sensorEvents: EventStream<ISensorEvent> = Mqtt.messageStreamFrom(mqttClient)
     .map(msg => {

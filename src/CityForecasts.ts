@@ -38,12 +38,12 @@ export function getAllCityForecastItemsWithInterval(city: string, intervalMs: nu
 
 export function getAllCityForecastItems(city: string): Promise<HourlyForecast[]> {
   return fetch(`https://www.tuuleeko.fi/fmiproxy/city-forecast?city=${city}`)
-    .then(res => res.json())
+    .then(res => res.json() as Promise<HourlyForecast[]>)
 }
 
 export function getCityForecastItems(city: string): Promise<ForecastItem[]> {
   return fetch(`https://www.tuuleeko.fi/fmiproxy/city-forecast?city=${city}`)
-    .then(res => res.json())
+    .then(res => res.json() as Promise<HourlyForecast[]>)
     .then((forecast: HourlyForecast[]) => {
       const firstForecastTime = getFirstShownForecastTimes(ZonedDateTime.now(ZoneId.of('Europe/Helsinki'))).withZoneSameInstant(ZoneId.UTC)
       const firstForecastIndex = forecast.findIndex(f => ZonedDateTime.parse(f.date).equals(firstForecastTime))
