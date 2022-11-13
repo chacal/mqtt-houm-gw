@@ -56,7 +56,7 @@ function renderStatusFields(ctx: CanvasRenderingContext2D, vcc: number, instance
 }
 
 function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[]) {
-  const forecastColumnXCoords = [30, 110, 190, 266]
+  const forecastColumnXCoords = [20, 70, 120, 170, 220, 270]
 
   return Promise.all(
     zip(forecastColumnXCoords, forecasts)
@@ -66,8 +66,8 @@ function renderForecasts(ctx: CanvasRenderingContext2D, forecasts: ForecastItem[
 }
 
 function renderForecast(ctx: CanvasRenderingContext2D, x: number, forecast: ForecastItem) {
-  ctx.font = '20px Roboto700'
-  renderCenteredText(ctx, Math.round(forecast.temperature) + '°C', x, 106)
+  ctx.font = '19px Roboto700'
+  renderCenteredText(ctx, Math.round(forecast.temperature) + '°C', x, 103)
 
   ctx.font = '15px Roboto700'
   renderCenteredText(ctx, paddedHoursFor(forecast), x, 48)
