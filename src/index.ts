@@ -62,7 +62,7 @@ function main() {
   setupTemperatureDisplay('D109', 'Car', carTempEvents, displayStatuses, D109_ADDRESS, 15)
   setupD107(outsideTempEvents, displayStatuses)
   setupD104_D108(displayStatuses, electricityPrices)
-  setupD110(displayStatuses)
+  setupD110(sensorEvents)
   setupImpulseListener(mqttClient)
   setupEnergyListener(sensorEvents, mqttClient)
   setupElectricityPricePublisher(electricityPrices, mqttClient)
