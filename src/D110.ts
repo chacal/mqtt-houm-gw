@@ -1,70 +1,103 @@
-import { fromPromise, interval, once } from 'baconjs'
-import { getRandomInt, sendBWRImageToDisplay } from './utils'
-import { getContext, renderCenteredText } from '@chacal/canvas-render-utils'
-import { getStopArrivals, HslArrival } from './HslTimetables'
-import { differenceInMinutes, format, getMinutes, startOfMinute } from 'date-fns'
+import {SensorEvents as SE} from '@chacal/js-utils'
+import {combineTemplate, EventStream} from 'baconjs'
+import {getRandomInt, sendBWRImageToDisplay} from './utils'
+import {getContext, renderRightAdjustedText} from '@chacal/canvas-render-utils'
+import {CanvasRenderingContext2D} from "canvas";
+import {ChronoUnit, LocalTime} from "@js-joda/core";
 
 const D110_ADDRESS = 'fddd:eeee:ffff:61:43a2:7c55:f229:85ef'
 const REAL_DISPLAY_WIDTH = 128
 const REAL_DISPLAY_HEIGHT = 296
+const DISPLAY_WIDTH = REAL_DISPLAY_HEIGHT
+const DISPLAY_HEIGHT = REAL_DISPLAY_WIDTH
+const LIVING_ROOM_INSTANCE = 'S205'
+const UPSTAIRS_BATHROOM_INSTANCE = 'S216'
+const UPSTAIRS_CLOSET_INSTANCE = 'S217'
+const DOWNSTAIRS_CLOSET_INSTANCE = 'S218'
+const DISPLAY_SELF_INSTANCE = 'D110'
 
-const RASTASKUKKULA_STOP_ID = 'HSL:2133219'
+const RENDERING_INTERVAL_MS = 30 * 60000 + getRandomInt(30000)
 
+type EnvironmentStream = EventStream<SE.IEnvironmentEvent>
 
-export default function setupNetworkDisplay() {
-  once('')
-    .delay(getRandomInt(30000))
-    .concat(interval(60000, ''))
-    .filter(shouldRender)
-    .flatMapLatest(() => fromPromise(getStopArrivals(RASTASKUKKULA_STOP_ID)))
-    .map(arrivals => render(arrivals))
-    .onValue(imageData => sendBWRImageToDisplay(D110_ADDRESS, imageData))
+export default function setupNetworkDisplay(sensorEvents: EventStream<SE.ISensorEvent>) {
+  const combinedEvents = createCombinedStream(sensorEvents)
+  combinedEvents
+      .first()
+      .delay(getRandomInt(60000))
+      .concat(combinedEvents.sample(RENDERING_INTERVAL_MS))
+      .map(v => renderData(
+          v.livingRoomTemp.temperature,
+          v.upstairsBathroomTemp.temperature,
+          v.upstairsClosetTemp.temperature,
+          v.downstairsClosetTemp.temperature,
+          v.displayStatus.vcc,
+          v.displayStatus.parent.latestRssi
+      ))
+      .onValue(imageData => sendBWRImageToDisplay(D110_ADDRESS, imageData))
 }
 
+function createCombinedStream(sensorEvents: EventStream<SE.ISensorEvent>) {
+  const displayStatus = sensorEvents.filter(e => SE.isThreadDisplayStatus(e) && e.instance === DISPLAY_SELF_INSTANCE) as EventStream<SE.IThreadDisplayStatus>
 
-export function render(arrivals: HslArrival[]) {
-  const ctx = getContext(REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT, false)
-  ctx.antialias = 'default'
-  ctx.font = '23px Roboto700'
-
-  let y = 30
-  const x = 4
-  const now = new Date()
-
-  arrivals.forEach(arr => {
-    renderArrival(ctx, arr, now, x, y)
-    y += 33
+  return combineTemplate({
+    livingRoomTemp: environmentEvents(sensorEvents, LIVING_ROOM_INSTANCE),
+    upstairsBathroomTemp: environmentEvents(sensorEvents, UPSTAIRS_BATHROOM_INSTANCE),
+    upstairsClosetTemp: environmentEvents(sensorEvents, UPSTAIRS_CLOSET_INSTANCE),
+    downstairsClosetTemp: environmentEvents(sensorEvents, DOWNSTAIRS_CLOSET_INSTANCE),
+    displayStatus
   })
+}
 
-  ctx.font = '20px Roboto700'
-  renderCenteredText(ctx, format(now, 'HH:mm'), REAL_DISPLAY_WIDTH / 2, REAL_DISPLAY_HEIGHT - 6)
+function environmentEvents(sensorEvents: EventStream<SE.ISensorEvent>, instance: string) {
+  return sensorEvents.filter(e => SE.isEnvironment(e) && e.instance === instance) as EnvironmentStream
+}
+
+export function renderData(livingRoomTemp: number, upstairsBathroomTemp: number, upstairsClosetTemp: number, downstairsClosetTemp: number, vcc: number, rssi: number) {
+  const ctx = getContext(REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT, true)
+  ctx.antialias = 'default'
+
+  const labelFont = '16px Roboto500'
+  const firstRowLabelY = 18
+  const secondRowLabelY = 82
+  const firstColumnX = 10
+  const secondColumnX = 125
+
+  ctx.font = labelFont
+  ctx.fillText('Living room', firstColumnX, firstRowLabelY)
+  ctx.fillText('Downs. closet', secondColumnX, firstRowLabelY)
+  ctx.fillText('Ups. closet', firstColumnX, secondRowLabelY)
+  ctx.fillText('Ups. bathroom', secondColumnX, secondRowLabelY)
+
+  const rowHeight = 37
+  const firstRowValueY = firstRowLabelY + rowHeight
+  const secondRowValueY = secondRowLabelY + rowHeight
+  renderValueWithUnit(ctx, `${livingRoomTemp.toFixed(1)}`, '°C', firstColumnX, firstRowValueY)
+  renderValueWithUnit(ctx, `${downstairsClosetTemp.toFixed(1)}`, '°C', secondColumnX, firstRowValueY)
+  renderValueWithUnit(ctx, `${upstairsClosetTemp.toFixed(1)}`, '°C', firstColumnX, secondRowValueY)
+  renderValueWithUnit(ctx, `${upstairsBathroomTemp.toFixed(1)}`, '°C', secondColumnX, secondRowValueY)
+
+  renderDisplayStatus(ctx, rssi, vcc)
 
   return ctx.getImageData(0, 0, REAL_DISPLAY_WIDTH, REAL_DISPLAY_HEIGHT)
 }
 
-function renderArrival(ctx: CanvasRenderingContext2D, arr: HslArrival, now: Date, x: number, y: number) {
-  const ts = startOfMinute(arr.arriveTs)
-  const realtimeMarker = arr.realtime && arr.realtimeState === 'UPDATED' ? '°' : ''
-
-  if (differenceInMinutes(ts, now) < 10 && isInFastRenderingPeriod(now)) {
-    ctx.fillText(`${Math.max(0, differenceInMinutes(ts, now))} min${realtimeMarker}`, x, y)
-  } else {
-    ctx.fillText(format(startOfMinute(arr.arriveTs), `HH:mm${realtimeMarker}`), x, y)
-  }
-  ctx.fillText(arr.route, x + 79, y)
+export function renderDisplayStatus(ctx: CanvasRenderingContext2D, rssi: number, vcc: number) {
+  const statusFont = '14px Roboto500'
+  const thirdColumnMarginRight = 6
+  ctx.font = statusFont
+  renderRightAdjustedText(ctx, LocalTime.now().truncatedTo(ChronoUnit.MINUTES).toString(), DISPLAY_WIDTH - thirdColumnMarginRight, 18)
+  renderRightAdjustedText(ctx, `${rssi}dBm`, DISPLAY_WIDTH - thirdColumnMarginRight, 68)
+  renderRightAdjustedText(ctx, `${(vcc / 1000).toFixed(3)}V`, DISPLAY_WIDTH - thirdColumnMarginRight, 118)
 }
 
-function isInFastRenderingPeriod(ts: Date) {
-  return false
-}
+export function renderValueWithUnit(ctx: CanvasRenderingContext2D, value: string, unit: string, x: number, y: number) {
+  const valueFont = '42px RobotoCondensed700'
+  const unitFont = '20px Roboto400'
 
-function shouldRender() {
-  const now = new Date()
-  // Don't skip rendering during fast render period
-  if (isInFastRenderingPeriod(now)) {
-    return true
-  } else { // Render every 10 minutes outside the fast render period
-    return getMinutes(now) % 10 === 0
-  }
+  ctx.font = valueFont
+  let meas = ctx.measureText(value)
+  ctx.fillText(value, x, y)
+  ctx.font = unitFont
+  ctx.fillText(unit, x + meas.width + 2, y - 15)
 }
-

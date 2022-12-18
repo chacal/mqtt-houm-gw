@@ -4,6 +4,7 @@ import { setupDownstairsToilet, setupStorage, setupUpstairsToilet } from './rule
 import setupTemperatureDisplay from './LargeTemperatureUI'
 import setupD107 from './D107'
 import setupD104_D108 from './D104_D108'
+import setupD110 from './D110'
 import setupImpulseListener from './ImpulseListener'
 import { createElectricityPricesStream } from './ElectricityPrices'
 import setupEnergyListener from './EnergyCalculator'
@@ -61,6 +62,7 @@ function main() {
   setupTemperatureDisplay('D109', 'Car', carTempEvents, displayStatuses, D109_ADDRESS, 15)
   setupD107(outsideTempEvents, displayStatuses)
   setupD104_D108(displayStatuses, electricityPrices)
+  setupD110(displayStatuses)
   setupImpulseListener(mqttClient)
   setupEnergyListener(sensorEvents, mqttClient)
   setupElectricityPricePublisher(electricityPrices, mqttClient)
