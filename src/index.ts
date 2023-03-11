@@ -55,11 +55,13 @@ function main() {
     ackTimeout: 12  // Use 12s ack timeout
   })
 
+/*
   setupTemperatureDisplay('D101', 'Outside', outsideTempEvents, displayStatuses, D101_ADDRESS, 30)
   setupTemperatureDisplay('D109', 'Car', carTempEvents, displayStatuses, D109_ADDRESS, 15)
   setupD107(outsideTempEvents, displayStatuses)
   setupD104_D108(displayStatuses, electricityPrices)
   setupD110(sensorEvents)
+*/
   setupImpulseListener(mqttClient)
   setupEnergyListener(sensorEvents, mqttClient)
   setupElectricityPricePublisher(electricityPrices, mqttClient)
