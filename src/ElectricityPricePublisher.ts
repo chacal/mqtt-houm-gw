@@ -10,7 +10,7 @@ export default function setupElectricityPricePublisher(spotPrices: EventStream<S
     .filter(p => p !== undefined) as EventStream<SpotPrice>
 
   currentPrices
-    .map(p => retailPrice(p) / 10)  // Convert to c/kWh
+    .map(p => retailPrice(p))
     .onValue(e => publishTo(mqttClient, e))
 }
 
