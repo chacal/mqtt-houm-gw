@@ -33,8 +33,8 @@ export function getNPricesFromCurrentHourForward(prices: SpotPrice[], count: num
 }
 
 export function retailPrice(spotPrice: SpotPrice) {
-  // 10% VAT + 0.37c/kWh commission + 3.14 c/kWh transfer + 2,79372 c/kWh electricity tax
-  return 1.1 * (spotPrice.price / 10) + 0.37 + 3.14 + 2.79372
+  // 10% VAT + 0.4c/kWh commission + 3.14 c/kWh transfer + 2,79372 c/kWh electricity tax
+  return 1.1 * (spotPrice.price / 10) + 0.4 + 3.14 + 2.79372
 }
 
 function priceForDate(prices: SpotPrice[], date: Date) {
