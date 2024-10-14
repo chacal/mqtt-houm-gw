@@ -48,7 +48,7 @@ function main() {
   const carTempEvents = environmentEventsFrom(sensorEvents, CAR_TEMP_SENSOR_INSTANCE)
   const outsideTempEvents = environmentEventsFrom(sensorEvents, OUTSIDE_TEMP_SENSOR_INSTANCE)
   const displayStatuses = displayStatusesFrom(sensorEvents)
-  const electricityPrices = createElectricityPricesStream()
+  // const electricityPrices = createElectricityPricesStream()
 
 
   Coap.updateTiming({
@@ -64,7 +64,7 @@ function main() {
 */
   setupImpulseListener(mqttClient)
   setupEnergyListener(sensorEvents, mqttClient)
-  setupElectricityPricePublisher(electricityPrices, mqttClient)
+  // setupElectricityPricePublisher(electricityPrices, mqttClient)
 }
 
 function environmentEventsFrom(sensorEvents: EventStream<ISensorEvent>, instance: string) {
